@@ -3,58 +3,34 @@
 #include<stdbool.h>
 
 struct file_content {
-	bool valid: true;
+	bool valid;
 	int row;
 	int col;
-	char turn;
+	char* turn;
 	char* result;
 };
 
-struct file_content *read_line_test(FILE* file) {
-	struct file_content* myFile;
-	//char* result = malloc(sizeof(char) * 80);
-	int position = 0;
-	int next = 0;
-	int digitCount = 0;
-	// Read first line to get row and col
-
-	while(1){
-		next = fgetc(file);
-		if(next == EOF || next == '\n'){
-			myFile -> valid = false;
-			return myFile;
-		}
-		else {
-			myFile -> row = (int)((char)next);
-			printf("%d\n", myFile->row);
-		}
-		// if(next == EOF || next=='\n'){
-		// 	printf("%c\n", (char)next);
-		// 	myFile -> valid = false;
-		// 	return myFile;		
-		// } 
-		// else{
-		// 	if(next == ' '){
-		// 		printf("%c\n", (char)next);
-		// 	}
-
-		// 	return myFile;
-		// }
-	}
-
-}
-
-char* read_line(FILE* file) {
+void read_line(FILE* file, struct file_content* myFile) {
 	char* result = malloc(sizeof(char) * 80);
 	int position = 0;
 	int next = 0;
 
+	//printf("Row: %d\n", myFile -> row);
+	//printf("Col: %d\n", myFile -> col);
+
 	while(1){
 		next = fgetc(file);
-		if(next == EOF || next=='\n'){
+		if(next == EOF){
 			result[position] = '\0';
-			return result;
-		} else if((char)next != ' ') result[position++] = (char)next;
+			myFile -> result = result;
+			break;
+		} 
+		// if(next == '\n') {
+		// 	next = fgetc(file);
+		// 	// read 2nd line
+		// 	char turn = (char)next;
+		// 	printf("Turn: %c\n",turn);
+		// }
 	}
 }
 
@@ -74,34 +50,46 @@ int main(int argc, char** argv){
 
 	// Check give file name
 	char* fileName = argv[3];
-	FILE* file = fopen(fileName, "r");
+	FILE* file;
+	file = fopen(fileName, "r");
 	if(file == NULL){
 		fprintf(stderr, "No file to load from\n");
 			return 1;
 	}
 
-	// read file && check valid file
-	FILE* outputFile;
-	//char* input;
+	struct file_content myFile;
 
-	outputFile = fopen(fileName, "r");
+	// check given row and col
+	int temp;
+	int count = 0;
+	while(fscanf(file,"%d",&temp)==1){
+    	count++;
+		if(count == 1){
+			myFile.row = temp;
+		}
+		else if (count == 2){
+			myFile.col = temp;
+		}
+		//printf("Temp: %d\n", temp);
+  	}
+	//printf("count numbers of int: %d\n", count);
+	// printf("Rows: %d\n", myFile.row);
+	// printf("Cols: %d\n", myFile.col);
 
-	struct file_content* input;
-	input = read_line_test(outputFile);
+	if(count != 2 || myFile.row < 3 || myFile.col < 3){
+		fprintf(stderr, "Invalid file contents\n");
+		return 1;
+	}
 
-	//fprintf(stdout, "Read %s\n", input);
+	//Read the second line && check valid file
 
-	// int i=0;
-	// while(input[i] != '\0'){
-	// 	printf("%c\n", input[i]);
-	// 	i++;
-	// }
+	read_line(file, &myFile);
+	if(!myFile.valid){
+		fprintf(stderr, "Invalid file contents\n");
+		return 1;
+	}
 
-	//fflush(stdout);
-
-	//free(input);
-	//fflush(outputFile);
-	fclose(outputFile);
+	fclose(file);
 
 	return 0;
 }
