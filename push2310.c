@@ -23,14 +23,9 @@ void read_line(FILE* file, struct file_content* myFile) {
 	int numOfRows = row;
 	int numOfCols = col*2 + 1;
 	myFile->numOfCols = numOfCols;
+	myFile->valid=true;
 
 	//printf("%d %d \n", numOfRows, numOfCols);
-
-	// Define 2D array
-	char** data = malloc(sizeof(char*) * numOfRows);
-	for(int i=0; i<numOfRows ; i++){
-		data[i] = malloc(sizeof(char) * numOfCols);
-	}
 
 	while(1){
 		next = fgetc(file);
@@ -38,6 +33,38 @@ void read_line(FILE* file, struct file_content* myFile) {
 			next = fgetc(file);
 			break;
 		}
+	}
+
+	// char** arr = malloc(sizeof(char*) * 100);
+	// for(int i=0; i<100 ; i++){
+	// 	arr[i] = malloc(sizeof(char) * 100);
+	// }
+
+	// for(int r=0; r<100; r++){
+	// 	for(int c=0; c<100; c++){
+	// 		if (next == EOF) break;
+	// 		if(next == '\n'){
+	// 			arr[r][c] = '\n';
+	// 			//printf("hi %c %d %d \n", arr[r][c], r, c);
+	// 			next = fgetc(file);
+	// 			break;
+	// 		}
+	// 		else{
+	// 			arr[r][c] = (char)next;
+	// 			//printf("%c %d %d \n", arr[r][c], r, c);
+	// 			next = fgetc(file);
+	// 		}
+	// 	}
+	// }
+
+	// myFile->data = arr;
+	// return;
+
+	// Define 2D array
+
+	char** data = malloc(sizeof(char*) * numOfRows);
+	for(int i=0; i<numOfRows ; i++){
+		data[i] = malloc(sizeof(char) * numOfCols);
 	}
 
 	for(int r=0; r<numOfRows; r++){
@@ -57,8 +84,19 @@ void read_line(FILE* file, struct file_content* myFile) {
 		}
 	}
 
-	myFile->data = data;
+	int rowCheck = numOfRows - 1;
+	int colCheck = numOfCols - 3;
+	if(data[rowCheck][colCheck] != ' ' || data[rowCheck][colCheck+1] != ' '){
+		myFile->valid = false;
+		//printf("Invalid from line 91\n");
+		free(data);
+		return;
+	}
+	
+	// printf("Value at rc cc: '%c' '%c'\n", data[rowCheck][colCheck], data[rowCheck][colCheck+1]);
+	// printf("rowcheck, colcheck valid: %d %d %d\n", rowCheck, colCheck, myFile->valid);
 
+	myFile->data = data;
 }
 
 void printBoard(struct file_content* myFile){
@@ -138,6 +176,11 @@ int main(int argc, char** argv){
 	myFile.turn = turn;
 
 	read_line(file, &myFile);
+
+	if(!myFile.valid){
+		fprintf(stderr, "Invalid file contents\n");
+		return 1;
+	}
 
 	//printf("Turn: %c\n", myFile.turn);
 	// if(!myFile.valid){
