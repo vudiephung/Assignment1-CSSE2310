@@ -62,7 +62,10 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 		bool isEmptyShell = false;
 		for(int i=1; i<rows; i++){
 			if(data[i][col_to_insert] == '.'){
-				printf("Dot at %d %d\n", i, col_to_insert);
+				for(int shiftIndex=i; shiftIndex>0; shiftIndex--){
+					data[shiftIndex][col_to_insert] = data[shiftIndex-1][col_to_insert];
+				}
+				printf("Dot at %d %d (before shift)\n", i, col_to_insert);
 				isEmptyShell = true;
 				break;
 			}
@@ -79,11 +82,14 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 						data[rows-2][col_to_insert] == '.';
 						//data[0][col_to_insert] != '.';
 		bool isEmptyShell = false;
-		for(int i=0; i<rows-1; i++){
+		for(int i=rows-2; i>=0; i--){
 				if(data[i][col_to_insert] == '.'){
-				printf("Dot at %d %d\n", i, col_to_insert);
-				isEmptyShell = true;
-				break;
+					for(int shiftIndex=i; shiftIndex<rows-1; shiftIndex++){
+						data[shiftIndex][col_to_insert] = data[shiftIndex+1][col_to_insert];
+					}
+					printf("Dot at %d %d (before shift)\n", i, col_to_insert);
+					isEmptyShell = true;
+					break;
 			}
 		}
 		if(invalids || !isEmptyShell) {
@@ -98,9 +104,12 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 		bool isEmptyShell = false;
 		for(int i=3; i<2*cols; i+=2){
 				if(data[row_to_insert][i] == '.'){
-				printf("Dot at %d %d\n", i, col_to_insert);
-				isEmptyShell = true;
-				break;
+					for(int shiftIndex=i; shiftIndex>=3; shiftIndex-=2){
+						data[row_to_insert][shiftIndex] = data[row_to_insert][shiftIndex-2];
+					}
+					printf("Dot at %d %d (bs)\n", i, col_to_insert);
+					isEmptyShell = true;
+					break;
 			}
 		}
 		if(invalids || !isEmptyShell) {
@@ -110,14 +119,19 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 	}
 
 	if(C==cols-1){
+		printf("This one\n");
 		bool invalids = data[row_to_insert][col_to_insert-2] == '.'||
 						data[row_to_insert][1] != '.';
 		bool isEmptyShell = false;
-		for(int i=1; i<2*cols-2; i+=2){
+		//for(int i=1; i<2*cols-2; i+=2){
+		for(int i=2*cols-3; i>=1; i-=2){
 				if(data[row_to_insert][i] == '.'){
-				printf("Dot at %d %d\n", i, col_to_insert);
-				isEmptyShell = true;
-				break;
+					printf("Dot at %d %d\n", row_to_insert, i);
+					for(int shiftIndex=i; shiftIndex<2*cols-2; shiftIndex+=2){
+						data[row_to_insert][shiftIndex] = data[row_to_insert][shiftIndex+2];
+					}
+					isEmptyShell = true;
+					break;
 			}
 		}
 		if(invalids || !isEmptyShell) {
@@ -161,34 +175,24 @@ void insert_board(FILE* file, struct file_content* myStruct, int R, int C){
 	char* turn = &myStruct->turn;
 
 	//Insert into position
-	data[row_to_insert][col_to_insert] = *turn;
 
 	if(R==0){
-		for(int i=rows-1; i>0; i--){
-			data[i][col_to_insert] = data[i-1][col_to_insert];
-		}
+		data[1][col_to_insert] = *turn;
 	} else if(R==rows-1){
-		for(int i=0; i<rows-1; i++){
-			data[i][col_to_insert] = data[i+1][col_to_insert];
-		}
+		data[rows-2][col_to_insert] = *turn;
 	} else if(C==0){
-		for(int i=2*cols-1; i>0; i-=2){
-			data[row_to_insert][i] = data[row_to_insert][i-2];
-		}
+		data[row_to_insert][col_to_insert+2] = *turn;
 	} else if(C==cols-1){
-		for(int i=1; i<2*cols; i+=2){
-			data[row_to_insert][i] = data[row_to_insert][i+2];
-		}
+		data[row_to_insert][col_to_insert-2] = *turn;
 	} 
-
-	data[row_to_insert][col_to_insert] = '.';
+	else data[row_to_insert][col_to_insert] = *turn;
 	
 	*turn = *turn=='X' ? 'O' : 'X'; 
 	
 	//Modify data
 	myStruct->turn = *turn;
 
-	printf("190: %c\n",myStruct->data[row_to_insert][col_to_insert]);
+	//printf("190: %c\n",myStruct->data[row_to_insert][col_to_insert]);
 
 	//printf("From line 76: %c\n", myStruct->data[row_to_insert][col_to_insert]);
 
