@@ -5,6 +5,7 @@
 
 struct file_content {
 	bool valid;
+	bool is_end_game;
 	int row;
 	int col;
 	int numOfCols;
@@ -47,43 +48,6 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 	if(R>=rows || C>=cols) {
 		printf("first.\n");
 		return false;
-	} 
-
-	if(R == 0){
-		bool invalids = C==0 || 
-						C==cols-1 || 
-						data[1][col_to_insert] == '.' || 
-						data[rows-1][col_to_insert] != '.';
-		if(invalids) {
-			printf("Third.\n");
-			return false;
-		}
-	} 
-	else if(R==rows-1){
-		bool invalids = C==0 || 
-						C==cols-1 ||
-						data[rows-2][col_to_insert] == '.' || 
-						data[0][col_to_insert] != '.';
-		if(invalids) {
-			printf("Fourth.\n");
-			return false;
-		}
-	}
-	else if(C==0){
-		bool invalids = data[row_to_insert][col_to_insert+2]=='.' ||
-						data[row_to_insert][2*cols-1]!='.';
-		if(invalids) {
-			printf("Fith.\n");
-			return false;
-		}
-	}
-	else if(C==cols-1){
-		bool invalids = data[row_to_insert][col_to_insert-2] == '.'||
-						data[row_to_insert][1] != '.';
-		if(invalids) {
-			printf("Sixth.\n");
-			return 0;
-		}
 	}
 
 	if(data[row_to_insert][col_to_insert] != '.'){
@@ -91,10 +55,99 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 		return false;
 	}
 
+	if(R == 0){
+		bool invalids = C==0 || 
+						C==cols-1 || 
+						data[1][col_to_insert] == '.';
+		bool isEmptyShell = false;
+		for(int i=1; i<rows; i++){
+			if(data[i][col_to_insert] == '.'){
+				printf("Dot at %d %d\n", i, col_to_insert);
+				isEmptyShell = true;
+				break;
+			}
+		}
+		if(invalids || !isEmptyShell) {
+			printf("Third.\n");
+			return false;
+		}
+	} 
+
+	if(R==rows-1){
+		bool invalids = C==0 || 
+						C==cols-1 ||
+						data[rows-2][col_to_insert] == '.';
+						//data[0][col_to_insert] != '.';
+		bool isEmptyShell = false;
+		for(int i=0; i<rows-1; i++){
+				if(data[i][col_to_insert] == '.'){
+				printf("Dot at %d %d\n", i, col_to_insert);
+				isEmptyShell = true;
+				break;
+			}
+		}
+		if(invalids || !isEmptyShell) {
+			printf("Fourth.\n");
+			return false;
+		}
+	}
+
+	if(C==0){
+		bool invalids = data[row_to_insert][col_to_insert+2]=='.' ||
+						data[row_to_insert][2*cols-1]!='.';
+		bool isEmptyShell = false;
+		for(int i=3; i<2*cols; i+=2){
+				if(data[row_to_insert][i] == '.'){
+				printf("Dot at %d %d\n", i, col_to_insert);
+				isEmptyShell = true;
+				break;
+			}
+		}
+		if(invalids || !isEmptyShell) {
+			printf("Fifth.\n");
+			return false;
+		}
+	}
+
+	if(C==cols-1){
+		bool invalids = data[row_to_insert][col_to_insert-2] == '.'||
+						data[row_to_insert][1] != '.';
+		bool isEmptyShell = false;
+		for(int i=1; i<2*cols-2; i+=2){
+				if(data[row_to_insert][i] == '.'){
+				printf("Dot at %d %d\n", i, col_to_insert);
+				isEmptyShell = true;
+				break;
+			}
+		}
+		if(invalids || !isEmptyShell) {
+			printf("Sixth.\n");
+			return false;
+		}
+	}
+
 	return true;
 }
 
-int scoring(char** data, struct file_content* myStruct, char turn){
+bool is_end_game(struct file_content* myStruct){
+	char** data = myStruct->data;
+	int rows = myStruct->row;
+	int cols = myStruct->col;
+	//int numOfCols = myStruct->numOfCols;
+	bool is_end = true;
+	for(int i=1; i<rows-1; i++){
+		for(int j=3; j<2*cols-2; j+=2){
+			if(data[i][j] == '.'){
+				is_end = false;
+				break;
+			}
+		}
+		if(is_end == false) break;
+	}
+	return is_end;
+}
+
+int scoring(struct file_content* myStruct){
 
 }
 
@@ -106,7 +159,7 @@ void insert_board(FILE* file, struct file_content* myStruct, int R, int C){
 	int cols = myStruct->col;
 
 	char* turn = &myStruct->turn;
-	
+
 	//Insert into position
 	data[row_to_insert][col_to_insert] = *turn;
 
@@ -115,7 +168,7 @@ void insert_board(FILE* file, struct file_content* myStruct, int R, int C){
 			data[i][col_to_insert] = data[i-1][col_to_insert];
 		}
 	} else if(R==rows-1){
-		for(int i=0; i<rows; i++){
+		for(int i=0; i<rows-1; i++){
 			data[i][col_to_insert] = data[i+1][col_to_insert];
 		}
 	} else if(C==0){
@@ -123,20 +176,19 @@ void insert_board(FILE* file, struct file_content* myStruct, int R, int C){
 			data[row_to_insert][i] = data[row_to_insert][i-2];
 		}
 	} else if(C==cols-1){
-		for(int i=0; i<2*cols; i+=2){
+		for(int i=1; i<2*cols; i+=2){
 			data[row_to_insert][i] = data[row_to_insert][i+2];
 		}
 	} 
 
 	data[row_to_insert][col_to_insert] = '.';
-	// else {
-	// 	data[row_to_insert][col_to_insert] = *turn;
-	// }
 	
 	*turn = *turn=='X' ? 'O' : 'X'; 
 	
 	//Modify data
 	myStruct->turn = *turn;
+
+	printf("190: %c\n",myStruct->data[row_to_insert][col_to_insert]);
 
 	//printf("From line 76: %c\n", myStruct->data[row_to_insert][col_to_insert]);
 
@@ -303,9 +355,8 @@ int main(int argc, char** argv){
 		int R, C;
 		printf("%c:(R C)> ", turn);
 		scanf("%d %d", &R, &C);
-		//printf("R: %d C: %d\n", R, C);
-
 		//Insert into board 
+		// Check is_end_game !!!!
 		if(is_valid_insert(&myStruct, R,C)){
 			insert_board(file, &myStruct, R, C);
 		} else {
@@ -322,12 +373,6 @@ int main(int argc, char** argv){
 		print_board(&myStruct, file_write);
 
 		fclose(file_write);
-		//write_board_to_file(file_write, &myStruct);
-
-		// Show board to the screen 
-		//print_board(&myStruct);
-
-		// Trigger new turn
 	}
 
 	fclose(file);
