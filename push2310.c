@@ -6,11 +6,12 @@
 struct file_content {
 	bool valid;
 	bool is_end_game;
+	char Winners;
 	int row;
 	int col;
 	int numOfCols;
 	// int scoreX;
-	// int scoreY;
+	// int scoreO;
 	char turn;
 	char** data;
 };
@@ -161,8 +162,27 @@ bool is_end_game(struct file_content* myStruct){
 	return is_end;
 }
 
-int scoring(struct file_content* myStruct){
-
+void findWinner(struct file_content* myStruct){
+	char** data = myStruct->data;
+	int rows = myStruct->row;
+	int numOfCols = myStruct->numOfCols;
+	int scoreX = 0;
+	int scoreO = 0;
+	for(int r=0; r<rows; r++){
+		for(int c=0; c<numOfCols; c++){
+			if(data[r][c] == 'X'){
+				scoreX+= (data[r][c-1]-'0');
+			} else if(data[r][c] == 'O'){
+				scoreO+= (data[r][c-1]-'0');
+			}
+		}
+	}
+	printf("Score: %d %d\n", scoreX, scoreO);
+	if(scoreX > scoreO) {
+		myStruct->Winners = 'X';
+	} else if(scoreO> scoreX){
+		myStruct->Winners = 'Y';
+	} else myStruct->Winners = '0';
 }
 
 void insert_board(FILE* file, struct file_content* myStruct, int R, int C){
@@ -359,12 +379,19 @@ int main(int argc, char** argv){
 		int R, C;
 		printf("%c:(R C)> ", turn);
 		scanf("%d %d", &R, &C);
+
 		//Insert into board 
 		// Check is_end_game !!!!
-		if(is_valid_insert(&myStruct, R,C)){
+		if(!is_end_game(&myStruct) && is_valid_insert(&myStruct, R,C)){
 			insert_board(file, &myStruct, R, C);
 		} else {
+			printf("End game or not valid insert.\n");
 			//printf("Invalid input\n");
+		}
+
+		if(is_end_game(&myStruct)){
+			findWinner(&myStruct);
+			printf("Winners: %c\n", myStruct.Winners);
 		}
 		
 		// printf("From line 250: %c\n", myStruct.data[R][2*C+1]);
