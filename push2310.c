@@ -23,9 +23,9 @@ void print_board(struct file_content* myStruct, FILE* file){
 	int numOfCols = myStruct->numOfCols;
 	int turn = myStruct->turn;
 
-	fprintf(file, "%d %d\n", rows, cols);
-	fflush(file);
-	fprintf(file, "%c\n", turn);
+	// fprintf(file, "%d %d\n", rows, cols);
+	// fflush(file);
+	// fprintf(file, "%c\n", turn);
 	
 	for(int r=0; r<rows; r++){
 		for(int c=0; c<numOfCols; c++){
@@ -66,7 +66,7 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 				for(int shiftIndex=i; shiftIndex>0; shiftIndex--){
 					data[shiftIndex][col_to_insert] = data[shiftIndex-1][col_to_insert];
 				}
-				printf("Dot at %d %d (before shift)\n", i, col_to_insert);
+				//printf("Dot at %d %d (before shift)\n", i, col_to_insert);
 				isEmptyShell = true;
 				break;
 			}
@@ -88,7 +88,7 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 					for(int shiftIndex=i; shiftIndex<rows-1; shiftIndex++){
 						data[shiftIndex][col_to_insert] = data[shiftIndex+1][col_to_insert];
 					}
-					printf("Dot at %d %d (before shift)\n", i, col_to_insert);
+					//printf("Dot at %d %d (before shift)\n", i, col_to_insert);
 					isEmptyShell = true;
 					break;
 			}
@@ -108,7 +108,7 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 					for(int shiftIndex=i; shiftIndex>=3; shiftIndex-=2){
 						data[row_to_insert][shiftIndex] = data[row_to_insert][shiftIndex-2];
 					}
-					printf("Dot at %d %d (bs)\n", i, col_to_insert);
+					//printf("Dot at %d %d (bs)\n", i, col_to_insert);
 					isEmptyShell = true;
 					break;
 			}
@@ -127,7 +127,7 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 		//for(int i=1; i<2*cols-2; i+=2){
 		for(int i=2*cols-3; i>=1; i-=2){
 				if(data[row_to_insert][i] == '.'){
-					printf("Dot at %d %d\n", row_to_insert, i);
+					//printf("Dot at %d %d\n", row_to_insert, i);
 					for(int shiftIndex=i; shiftIndex<2*cols-2; shiftIndex+=2){
 						data[row_to_insert][shiftIndex] = data[row_to_insert][shiftIndex+2];
 					}
@@ -183,6 +183,8 @@ void findWinner(struct file_content* myStruct){
 	} else if(scoreO> scoreX){
 		myStruct->Winners = 'Y';
 	} else myStruct->Winners = '0';
+
+	printf("Winners: %c\n", myStruct->Winners);
 }
 
 void insert_board(FILE* file, struct file_content* myStruct, int R, int C){
@@ -221,6 +223,10 @@ void insert_board(FILE* file, struct file_content* myStruct, int R, int C){
 	//scoreX, Y
 }
 
+void get_user_input(){
+	
+}
+
 void read_board(FILE* file, struct file_content* myStruct) {
 	// printf("Row: %d\n", myStruct -> row);
 	// printf("Col: %d\n", myStruct -> col);
@@ -242,22 +248,44 @@ void read_board(FILE* file, struct file_content* myStruct) {
 	}
 
 	for(int r=0; r<numOfRows; r++){
-		
+		if(!myStruct->valid) break;
 		for(int c=0; c<numOfCols; c++){
-			if (next == EOF) break;
-			else if(next == '\n'){
+			//if (next == EOF) break;
+			if(next == '\n'){
 				data[r][c] = '\n';
 				//printf("hi %c %d %d \n", data[r][c], r, c);
 				next = fgetc(file);
-				break;
+				//break;
 			}
 			else{
-				data[r][c] = (char)next;
-				//printf("%c %d %d \n", data[r][c], r, c);
-				next = fgetc(file);
+				if( (char)next-'0' == 0 ||
+					(char)next-'0' == 1 ||
+					(char)next-'0' == 2 ||
+					(char)next-'0' == 3 ||
+					(char)next-'0' == 4 ||
+					(char)next-'0' == 5 ||
+					(char)next-'0' == 6 ||
+					(char)next-'0' == 7 ||
+					(char)next-'0' == 8 ||
+					(char)next-'0' == 9 ||
+					(char)next == 'X' 	||
+					(char)next == 'O' 	||
+					(char)next == '.' 	||
+					(char)next == ' ' 	
+				){
+					data[r][c] = (char)next;
+					//printf("%c %d %d \n", data[r][c], r, c);
+					next = fgetc(file);
+				}
+				else{
+					myStruct->valid = false;
+					break;
+				}
 			}
 		}
 	}
+
+	if(!myStruct->valid) return;
 
 	int rowCheck = numOfRows - 1;
 	int colCheck = numOfCols - 3;
@@ -280,6 +308,12 @@ void free_data(struct file_content* myStruct, char** data){
 		free(data[i]);
 	}
 	free(data);
+}
+
+int clean_stdin()
+{
+    while (getchar()!='\n');
+    return 1;
 }
 
 int main(int argc, char** argv){
@@ -370,40 +404,66 @@ int main(int argc, char** argv){
 	// 	return 1;
 	// }
 
-	print_board(&myStruct, stdout);
+	//if(is_end_game(&myStruct)){
+		print_board(&myStruct, stdout);
+	//}
 
 	// Base on player type 
 	// H H ???
 
+	bool validInput = true;
+
 	if(*firstType == 'H' && *secondType == 'H'){
-		int R, C;
-		printf("%c:(R C)> ", turn);
-		scanf("%d %d", &R, &C);
+		int R,C;
+		//while (((scanf("%d%c", &rows, &c)!=2 || c!='\n') && clean_stdin()) || rows<1 || rows>23);
+		while (!is_end_game(&myStruct)){
+			// Get R and C
+			char* saveName;
+			turn = myStruct.turn;
+			//print_board(&myStruct, stdout);
 
-		//Insert into board 
-		// Check is_end_game !!!!
-		if(!is_end_game(&myStruct) && is_valid_insert(&myStruct, R,C)){
-			insert_board(file, &myStruct, R, C);
-		} else {
-			printf("End game or not valid insert.\n");
-			//printf("Invalid input\n");
-		}
+			printf("%c:(R C)> ", turn);
+			//printf("%d %d\n", R, C);
 
-		if(is_end_game(&myStruct)){
-			findWinner(&myStruct);
-			printf("Winners: %c\n", myStruct.Winners);
+			// if(scanf("%c%s", "s", saveName) == 2){
+			// 	printf("388: %s\n", saveName);
+			// 	// save File 
+			// 	FILE* file_write;
+			// 	file_write = fopen(saveName, "w");
+			// 	print_board(&myStruct, file_write);
+			// 	fclose(file_write);
+			// }
+
+			int num_of_inputs = scanf("%d %d", &R, &C);
+			
+			if (num_of_inputs==2){
+				// Check Valid
+				bool valid = is_valid_insert(&myStruct, R,C);
+				if(valid){
+					// If valid, insert to Data
+					insert_board(file, &myStruct, R, C);
+					print_board(&myStruct, stdout);
+				} else {
+					continue;
+				}
+			}
+			else {
+				clean_stdin();
+				continue;
+			}
 		}
+	}
+
+	// while(!validInput){
+	// 	int R,C;
+	// 	char turn = myStruct.turn;
 		
-		// printf("From line 250: %c\n", myStruct.data[R][2*C+1]);
-		// printf("From line 251: %c\n", myStruct.turn);
+	// 	printf("%c:(R C)> ", turn);
+	// 	int num_of_inputs = scanf("%d %d", &R, &C);
+	// }
 
-		// Write to File 
-		FILE* file_write;
-		file_write = fopen(fileName, "w");
-
-		print_board(&myStruct, file_write);
-
-		fclose(file_write);
+	if(validInput){
+		findWinner(&myStruct);
 	}
 
 	fclose(file);
