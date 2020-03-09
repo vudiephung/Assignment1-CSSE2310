@@ -10,8 +10,6 @@ struct file_content {
 	int row;
 	int col;
 	int numOfCols;
-	// int scoreX;
-	// int scoreO;
 	char turn;
 	char** data;
 };
@@ -108,7 +106,6 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 					for(int shiftIndex=i; shiftIndex>=3; shiftIndex-=2){
 						data[row_to_insert][shiftIndex] = data[row_to_insert][shiftIndex-2];
 					}
-					//printf("Dot at %d %d (bs)\n", i, col_to_insert);
 					isEmptyShell = true;
 					break;
 			}
@@ -124,10 +121,8 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 		bool invalids = data[row_to_insert][col_to_insert-2] == '.'||
 						data[row_to_insert][1] != '.';
 		bool isEmptyShell = false;
-		//for(int i=1; i<2*cols-2; i+=2){
 		for(int i=2*cols-3; i>=1; i-=2){
 				if(data[row_to_insert][i] == '.'){
-					//printf("Dot at %d %d\n", row_to_insert, i);
 					for(int shiftIndex=i; shiftIndex<2*cols-2; shiftIndex+=2){
 						data[row_to_insert][shiftIndex] = data[row_to_insert][shiftIndex+2];
 					}
@@ -148,7 +143,6 @@ bool is_end_game(struct file_content* myStruct){
 	char** data = myStruct->data;
 	int rows = myStruct->row;
 	int cols = myStruct->col;
-	//int numOfCols = myStruct->numOfCols;
 	bool is_end = true;
 	for(int i=1; i<rows-1; i++){
 		for(int j=3; j<2*cols-2; j+=2){
@@ -213,24 +207,9 @@ void insert_board(FILE* file, struct file_content* myStruct, int R, int C){
 	
 	//Modify data
 	myStruct->turn = *turn;
-
-	//printf("190: %c\n",myStruct->data[row_to_insert][col_to_insert]);
-
-	//printf("From line 76: %c\n", myStruct->data[row_to_insert][col_to_insert]);
-
-	//printf("From line 116: %c\n", myStruct->turn);
-
-	//scoreX, Y
-}
-
-void get_user_input(){
-	
 }
 
 void read_board(FILE* file, struct file_content* myStruct) {
-	// printf("Row: %d\n", myStruct -> row);
-	// printf("Col: %d\n", myStruct -> col);
-	// printf("Turn: %c\n", myStruct -> turn);
 	char** data = myStruct->data;
 	int numOfRows = myStruct->row;
 	int numOfCols = myStruct->col * 2 + 1;
@@ -251,6 +230,28 @@ void read_board(FILE* file, struct file_content* myStruct) {
 		if(!myStruct->valid) break;
 		for(int c=0; c<numOfCols; c++){
 			//if (next == EOF) break;
+			// check numbers of 4 edges must be 0
+			if(r==0 || r==numOfRows-1){
+				if(c > 1 && c < numOfCols-3 && c%2==0){
+					//printf("This line '%d' '%d' '%c'\n", r,c, (char)next);
+					if((char)next-'0' != 0){
+						myStruct->valid = false;
+						printf("Line 257\n");
+						break;
+					}
+				}
+			}
+			else{
+				if(c == 0 || c==numOfCols-3){
+					if((char)next-'0' != 0){
+						myStruct->valid = false;
+						printf("Line 269\n");
+						break;
+					}
+				}
+			}
+
+			//
 			if(next == '\n'){
 				data[r][c] = '\n';
 				//printf("hi %c %d %d \n", data[r][c], r, c);
@@ -308,12 +309,6 @@ void free_data(struct file_content* myStruct, char** data){
 		free(data[i]);
 	}
 	free(data);
-}
-
-int clean_stdin()
-{
-    while (getchar()!='\n');
-    return 1;
 }
 
 int main(int argc, char** argv){
@@ -398,32 +393,19 @@ int main(int argc, char** argv){
 		return 4;
 	}
 
-	//printf("Turn: %c\n", myStruct.turn);
-	// if(!myStruct.valid){
-	// 	fprintf(stderr, "Invalid file contents\n");
-	// 	return 1;
-	// }
-
-	//if(is_end_game(&myStruct)){
-		print_board(&myStruct, stdout);
-	//}
+	print_board(&myStruct, stdout);
 
 	// Base on player type 
 	// H H ???
-
-	bool validInput = true;
-
 	if(*firstType == 'H' && *secondType == 'H'){
-		int R,C;
-		//while (((scanf("%d%c", &rows, &c)!=2 || c!='\n') && clean_stdin()) || rows<1 || rows>23);
+		int R,C, bufPos, returnValue;
+    	char line[20];
+
 		while (!is_end_game(&myStruct)){
-			// Get R and C
 			char* saveName;
 			turn = myStruct.turn;
-			//print_board(&myStruct, stdout);
 
 			printf("%c:(R C)> ", turn);
-			//printf("%d %d\n", R, C);
 
 			// if(scanf("%c%s", "s", saveName) == 2){
 			// 	printf("388: %s\n", saveName);
@@ -434,37 +416,24 @@ int main(int argc, char** argv){
 			// 	fclose(file_write);
 			// }
 
-			int num_of_inputs = scanf("%d %d", &R, &C);
-			
-			if (num_of_inputs==2){
-				// Check Valid
+			fgets(line, sizeof(line), stdin);
+
+			returnValue = sscanf(line, "%d %d %n", &R, &C, &bufPos);
+			// printf("Return value: '%d'\n", bufPos);
+			// printf("line[bufPos]: '%c'\n", line[bufPos]);
+
+			if (returnValue==2 && line[bufPos] == '\0'){
 				bool valid = is_valid_insert(&myStruct, R,C);
 				if(valid){
-					// If valid, insert to Data
 					insert_board(file, &myStruct, R, C);
 					print_board(&myStruct, stdout);
-				} else {
-					continue;
-				}
+				} else continue;
 			}
-			else {
-				clean_stdin();
-				continue;
-			}
+			else continue;
 		}
 	}
 
-	// while(!validInput){
-	// 	int R,C;
-	// 	char turn = myStruct.turn;
-		
-	// 	printf("%c:(R C)> ", turn);
-	// 	int num_of_inputs = scanf("%d %d", &R, &C);
-	// }
-
-	if(validInput){
-		findWinner(&myStruct);
-	}
+	findWinner(&myStruct);
 
 	fclose(file);
 
