@@ -416,7 +416,14 @@ int main(int argc, char** argv){
 			// 	fclose(file_write);
 			// }
 
-			fgets(line, sizeof(line), stdin);
+			if(fgets(line, sizeof(line), stdin) == 0){
+				fprintf(stderr, "End of file\n");
+				return 5;
+			}
+
+			// if (fgets(buffer, 80, fin)==0) {
+            // return 1;
+			// }
 
 			returnValue = sscanf(line, "%d %d %n", &R, &C, &bufPos);
 			// printf("Return value: '%d'\n", bufPos);
