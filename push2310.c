@@ -14,6 +14,10 @@ struct file_content {
 	char** data;
 };
 
+struct Player{
+	char* type; // 0 1 H
+};
+
 void print_board(struct file_content* myStruct, FILE* file){
 	char** data = myStruct->data;
 	int rows = myStruct->row;
@@ -45,12 +49,12 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 	//printf("Line 45: %d %d %c\n",row_to_insert,col_to_insert, data[row_to_insert][col_to_insert]);
 
 	if(R>=rows || C>=cols) {
-		printf("first.\n");
+		//printf("first.\n");
 		return false;
 	}
 
 	if(data[row_to_insert][col_to_insert] != '.'){
-		printf("Second.\n");
+		//printf("Second.\n");
 		return false;
 	}
 
@@ -70,7 +74,7 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 			}
 		}
 		if(invalids || !isEmptyShell) {
-			printf("Third.\n");
+			//printf("Third.\n");
 			return false;
 		}
 	} 
@@ -92,7 +96,7 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 			}
 		}
 		if(invalids || !isEmptyShell) {
-			printf("Fourth.\n");
+			//printf("Fourth.\n");
 			return false;
 		}
 	}
@@ -111,13 +115,13 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 			}
 		}
 		if(invalids || !isEmptyShell) {
-			printf("Fifth.\n");
+			//printf("Fifth.\n");
 			return false;
 		}
 	}
 
 	if(C==cols-1){
-		printf("This one\n");
+		//printf("This one\n");
 		bool invalids = data[row_to_insert][col_to_insert-2] == '.'||
 						data[row_to_insert][1] != '.';
 		bool isEmptyShell = false;
@@ -131,7 +135,7 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 			}
 		}
 		if(invalids || !isEmptyShell) {
-			printf("Sixth.\n");
+			//printf("Sixth.\n");
 			return false;
 		}
 	}
@@ -171,14 +175,19 @@ void findWinner(struct file_content* myStruct){
 			}
 		}
 	}
-	printf("Score: %d %d\n", scoreX, scoreO);
+	//printf("Score: %d %d\n", scoreX, scoreO);
 	if(scoreX > scoreO) {
 		myStruct->Winners = 'X';
 	} else if(scoreO> scoreX){
-		myStruct->Winners = 'Y';
-	} else myStruct->Winners = '0';
+		myStruct->Winners = 'O';
+	} else myStruct->Winners = '?';
 
-	printf("Winners: %c\n", myStruct->Winners);
+	if(myStruct->Winners == '?'){
+		printf("Winners: %c %c\n", 'O', 'X');
+	} else {
+		printf("Winners: %c\n", myStruct->Winners);
+	}
+	
 }
 
 void insert_board(FILE* file, struct file_content* myStruct, int R, int C){
@@ -327,8 +336,9 @@ int main(int argc, char** argv){
 		}
 	}
 
-	char* firstType = argv[1];
-	char* secondType = argv[2];
+	struct Player playerO, playerX;
+	playerO.type = argv[1];
+	playerX.type = argv[2];
 
 	// Check give file name
 	char* fileName = argv[3];
@@ -396,38 +406,48 @@ int main(int argc, char** argv){
 	print_board(&myStruct, stdout);
 
 	// Base on player type 
-	// H H ???
-	if(*firstType == 'H' && *secondType == 'H'){
-		int R,C, bufPos, returnValue;
-    	char line[20];
+	int R,C, bufPos, returnValue;
+    char line[20];
 
-		while (!is_end_game(&myStruct)){
-			char* saveName;
-			turn = myStruct.turn;
+	while(!is_end_game(&myStruct)){
 
+		//print_board(&myStruct, stdout);
+
+		char* saveName;
+		// What player turn?
+		turn = myStruct.turn; // X or O // char
+
+		char currentType; // 0 1 H ?
+		if(turn == 'X'){
+			currentType = *playerX.type;
+		} else {
+			currentType = *playerO.type;
+		}
+
+		if(currentType == 'H'){
 			printf("%c:(R C)> ", turn);
 
-			// if(scanf("%c%s", "s", saveName) == 2){
-			// 	printf("388: %s\n", saveName);
-			// 	// save File 
-			// 	FILE* file_write;
-			// 	file_write = fopen(saveName, "w");
-			// 	print_board(&myStruct, file_write);
-			// 	fclose(file_write);
-			// }
+				// if(scanf("%c%s", "s", saveName) == 2){
+				// 	printf("388: %s\n", saveName);
+				// 	// save File 
+				// 	FILE* file_write;
+				// 	file_write = fopen(saveName, "w");
+				// 	print_board(&myStruct, file_write);
+				// 	fclose(file_write);
+				// }
 
 			if(fgets(line, sizeof(line), stdin) == 0){
 				fprintf(stderr, "End of file\n");
 				return 5;
 			}
 
-			// if (fgets(buffer, 80, fin)==0) {
-            // return 1;
-			// }
+				// if (fgets(buffer, 80, fin)==0) {
+				// return 1;
+				// }
 
 			returnValue = sscanf(line, "%d %d %n", &R, &C, &bufPos);
-			// printf("Return value: '%d'\n", bufPos);
-			// printf("line[bufPos]: '%c'\n", line[bufPos]);
+				// printf("Return value: '%d'\n", bufPos);
+				// printf("line[bufPos]: '%c'\n", line[bufPos]);
 
 			if (returnValue==2 && line[bufPos] == '\0'){
 				bool valid = is_valid_insert(&myStruct, R,C);
@@ -438,6 +458,44 @@ int main(int argc, char** argv){
 			}
 			else continue;
 		}
+
+		if(currentType == '0'){
+			bool finish = false;
+			//print_board(&myStruct, stdout);
+			if(turn == 'O'){ //left to right 
+				//printf("Line 463\n");
+				for(int r=1; r<numOfRows-1; r++){
+					if(finish) break;
+					for(int c=3; c<numOfCols-3; c+=2){
+						if(myStruct.data[r][c] == '.'){
+							myStruct.data[r][c] = turn;
+							printf("Player %c placed at %d %d\n", turn, r, (c-1)/2);
+							print_board(&myStruct, stdout);
+							myStruct.turn = 'X';
+							finish = true;
+							break;
+						}
+					}
+				}				
+			}
+			else if(turn == 'X'){
+				for(int r=numOfRows-2; r>=1; r--){
+					if(finish) break;
+					for(int c=numOfCols-4; c>1; c-=2){
+						if(myStruct.data[r][c] == '.'){
+							myStruct.data[r][c] = turn;
+							printf("Player %c placed at %d %d\n", turn, r, (c-1)/2);
+							print_board(&myStruct, stdout);
+							myStruct.turn = 'O';
+							finish = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+
 	}
 
 	findWinner(&myStruct);
