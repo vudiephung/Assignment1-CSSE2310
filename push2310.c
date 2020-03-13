@@ -14,7 +14,7 @@ struct file_content {
 	char** data;
 };
 
-struct Player{
+struct Player{ // X O
 	char* type; // 0 1 H
 };
 
@@ -39,7 +39,7 @@ void print_board(struct file_content* myStruct, FILE* file){
 	}
 }
 
-bool is_valid_insert(struct file_content* myStruct, int R, int C){
+bool is_valid_insert(struct file_content* myStruct, int R, int C, bool shift){
 	int rows = myStruct->row; // row of board
 	int cols = myStruct->col; // col of board 
 	int row_to_insert = R;  // position in data
@@ -65,8 +65,10 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 		bool isEmptyShell = false;
 		for(int i=1; i<rows; i++){
 			if(data[i][col_to_insert] == '.'){
-				for(int shiftIndex=i; shiftIndex>0; shiftIndex--){
-					data[shiftIndex][col_to_insert] = data[shiftIndex-1][col_to_insert];
+				if(shift){
+					for(int shiftIndex=i; shiftIndex>0; shiftIndex--){
+						data[shiftIndex][col_to_insert] = data[shiftIndex-1][col_to_insert];
+					}
 				}
 				//printf("Dot at %d %d (before shift)\n", i, col_to_insert);
 				isEmptyShell = true;
@@ -87,8 +89,10 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 		bool isEmptyShell = false;
 		for(int i=rows-2; i>=0; i--){
 				if(data[i][col_to_insert] == '.'){
-					for(int shiftIndex=i; shiftIndex<rows-1; shiftIndex++){
-						data[shiftIndex][col_to_insert] = data[shiftIndex+1][col_to_insert];
+					if(shift){
+						for(int shiftIndex=i; shiftIndex<rows-1; shiftIndex++){
+							data[shiftIndex][col_to_insert] = data[shiftIndex+1][col_to_insert];
+						}
 					}
 					//printf("Dot at %d %d (before shift)\n", i, col_to_insert);
 					isEmptyShell = true;
@@ -107,8 +111,10 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 		bool isEmptyShell = false;
 		for(int i=3; i<2*cols; i+=2){
 				if(data[row_to_insert][i] == '.'){
-					for(int shiftIndex=i; shiftIndex>=3; shiftIndex-=2){
-						data[row_to_insert][shiftIndex] = data[row_to_insert][shiftIndex-2];
+					if(shift){
+						for(int shiftIndex=i; shiftIndex>=3; shiftIndex-=2){
+							data[row_to_insert][shiftIndex] = data[row_to_insert][shiftIndex-2];
+						}
 					}
 					isEmptyShell = true;
 					break;
@@ -127,8 +133,10 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C){
 		bool isEmptyShell = false;
 		for(int i=2*cols-3; i>=1; i-=2){
 				if(data[row_to_insert][i] == '.'){
-					for(int shiftIndex=i; shiftIndex<2*cols-2; shiftIndex+=2){
-						data[row_to_insert][shiftIndex] = data[row_to_insert][shiftIndex+2];
+					if(shift){
+						for(int shiftIndex=i; shiftIndex<2*cols-2; shiftIndex+=2){
+							data[row_to_insert][shiftIndex] = data[row_to_insert][shiftIndex+2];
+						}
 					}
 					isEmptyShell = true;
 					break;
@@ -254,7 +262,7 @@ void read_board(FILE* file, struct file_content* myStruct) {
 				if(c == 0 || c==numOfCols-3){
 					if((char)next-'0' != 0){
 						myStruct->valid = false;
-						printf("Line 269\n");
+						printf("Line 269: %c %d %d\n", (char)next, r,c);
 						break;
 					}
 				}
@@ -318,6 +326,140 @@ void free_data(struct file_content* myStruct, char** data){
 		free(data[i]);
 	}
 	free(data);
+}
+
+void insert_at_edges(FILE* file, struct file_content* myStruct){
+	char** data = myStruct->data;
+	int rows = myStruct->row;
+	int cols = myStruct->col;
+
+	char myTurn = myStruct->turn;
+	char opponentTurn = myStruct->turn == 'X'?'O':'X';
+
+	int dot_row, dot_col;
+	bool found = false;
+
+	// top: left to right
+	for(int c=1; c<cols-1; c++){ //
+		int opScore=0;
+		int opScoreLater=0;	 
+		int col_to_insert = 2*c+1;
+		if(is_valid_insert(myStruct, 0, c, false)){
+			bool found_dot=false;
+			for(int r=1; r<rows-1; r++){ // at that col, go down
+				if(data[r][col_to_insert] == opponentTurn){
+					opScore += (data[r][col_to_insert-1] - '0');
+				}
+			}
+			for(int r=1; r<rows-1; r++){ 
+				if(found_dot) break;
+				if(data[r][col_to_insert] == '.'){
+					dot_row = r;
+					dot_col = col_to_insert;
+					for(int shiftIndex=dot_row; shiftIndex>0; shiftIndex--){
+						if(data[shiftIndex][col_to_insert] == opponentTurn){
+							opScoreLater += (data[shiftIndex+1][col_to_insert-1] - '0');
+						}
+					}
+					found_dot = true;
+					break;
+				}
+			}
+			
+			if(found_dot){
+				// plus opScore after dot
+				for(int r=dot_row; r<rows-1; r++){
+					if(data[r][col_to_insert] == opponentTurn){
+						opScoreLater += (data[r][col_to_insert-1] - '0');
+					}
+				}
+			}
+			else {
+				for(int r=1; r<rows-1; r++){
+					if(data[r][col_to_insert] == opponentTurn){
+						opScoreLater += (data[r][col_to_insert-1] - '0');
+					}
+				}
+			}
+			// compare opScore vs opScoreLater
+			//printf("386: Score of my, op, opafter: %d %d\n", opScore, opScoreLater);
+			if(opScoreLater < opScore){
+				is_valid_insert(myStruct, 0, c, true);
+				insert_board(file, myStruct, 0, c);
+				printf("Player %c placed at %d %d\n", opponentTurn, 0, c);
+				print_board(myStruct, stdout);
+				return;
+			}
+		}
+	}
+
+	// right: top to bottom
+	for(int r=1; r<rows-1; r++){
+		int opScore=0;
+		int opScoreLater=0;
+		if(is_valid_insert(myStruct, r, cols-1, false)){
+			bool found_dot=false;
+			for(int c=2*cols-1; c>1; c-=2){ // at that col, go left
+				if(data[r][c] == opponentTurn){
+					opScore += (data[r][c-1] - '0');
+				}
+			}
+			for(int c=2*cols-3; c>1; c-=2){  // find a dot 
+				if(found_dot) break;
+				if(data[r][c] == '.'){
+					dot_col = c;
+					// Loop from left of the dot and cal score of op
+					for(int shiftIndex=dot_col; shiftIndex<2*cols-1; shiftIndex++){
+						if(data[r][shiftIndex] == opponentTurn){
+							opScoreLater += data[r][shiftIndex-3] - '0';
+						}
+					}
+					found_dot = true;
+					break;
+				}
+			}
+			if(found_dot){
+				// plus opScore left of dot
+				for(int c=1; c<dot_col; c+=2){
+					if(data[r][c] == opponentTurn){
+						opScoreLater += (data[r][c-1] - '0');
+					}
+				}
+			}
+			else {
+				for(int c=1; c<2*cols-1; c++){
+					if(data[r][c] == opponentTurn){
+						opScoreLater += (data[r][c-1] - '0');
+					}
+				}
+			}
+			// compare opScore vs opScoreLater
+			if(opScoreLater < opScore){
+				is_valid_insert(myStruct, r, cols-1, true);
+				insert_board(file, myStruct, r, cols-1);
+				printf("Player %c placed at %d %d\n", myTurn, r, cols-1);
+				print_board(myStruct, stdout);
+				return;
+			}
+			break;
+		}
+	}
+
+	// bottom: right to left
+	for(int c=cols-2; c>0; c--){
+		if(is_valid_insert(myStruct, rows-1, c, false)){
+
+		}
+	}
+
+	// left: bottom to top
+	for(int r=rows-1; r>0; r--){
+		int opScore=0;
+		int opScoreLater=0;
+		if(is_valid_insert(myStruct, r, 0, false)){
+			
+		}
+	}
 }
 
 int main(int argc, char** argv){
@@ -450,7 +592,7 @@ int main(int argc, char** argv){
 				// printf("line[bufPos]: '%c'\n", line[bufPos]);
 
 			if (returnValue==2 && line[bufPos] == '\0'){
-				bool valid = is_valid_insert(&myStruct, R,C);
+				bool valid = is_valid_insert(&myStruct, R,C, true);
 				if(valid){
 					insert_board(file, &myStruct, R, C);
 					print_board(&myStruct, stdout);
@@ -495,6 +637,11 @@ int main(int argc, char** argv){
 			}
 		}
 
+		if(currentType == '1'){
+			// check 4 edges clockwise
+			insert_at_edges(file, &myStruct);
+			// check max score interior
+		}
 
 	}
 
