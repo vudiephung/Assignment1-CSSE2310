@@ -377,9 +377,10 @@ void insert_at_edges(FILE* file, struct file_content* myStruct){
 			else {
 				for(int r=1; r<rows-1; r++){
 					if(data[r][col_to_insert] == opponentTurn){
-						opScoreLater += (data[r][col_to_insert-1] - '0');
+						opScoreLater += (data[r+1][col_to_insert-1] - '0');
 					}
 				}
+				printf("Point: %d\n", opScoreLater);
 			}
 			// compare opScore vs opScoreLater
 			//printf("386: Score of my, op, opafter: %d %d\n", opScore, opScoreLater);
@@ -399,7 +400,7 @@ void insert_at_edges(FILE* file, struct file_content* myStruct){
 		int opScoreLater=0;
 		if(is_valid_insert(myStruct, r, cols-1, false)){
 			bool found_dot=false;
-			for(int c=2*cols-1; c>1; c-=2){ // at that col, go left
+			for(int c=2*cols-3; c>1; c-=2){ // at that col, go left
 				if(data[r][c] == opponentTurn){
 					opScore += (data[r][c-1] - '0');
 				}
@@ -408,8 +409,8 @@ void insert_at_edges(FILE* file, struct file_content* myStruct){
 				if(found_dot) break;
 				if(data[r][c] == '.'){
 					dot_col = c;
-					// Loop from left of the dot and cal score of op
-					for(int shiftIndex=dot_col; shiftIndex<2*cols-1; shiftIndex++){
+					// Loop from right of the dot and cal score of op
+					for(int shiftIndex=dot_col; shiftIndex<2*cols-1; shiftIndex+=2){
 						if(data[r][shiftIndex] == opponentTurn){
 							opScoreLater += data[r][shiftIndex-3] - '0';
 						}
@@ -441,14 +442,59 @@ void insert_at_edges(FILE* file, struct file_content* myStruct){
 				print_board(myStruct, stdout);
 				return;
 			}
-			break;
 		}
 	}
 
 	// bottom: right to left
 	for(int c=cols-2; c>0; c--){
+		int opScore=0;
+		int opScoreLater=0;	 
+		int col_to_insert = 2*c+1;
 		if(is_valid_insert(myStruct, rows-1, c, false)){
+			bool found_dot=false;
+			for(int r=rows-2; r>0; r--){
+				if(data[r][col_to_insert] == opponentTurn){
+					opScore += (data[r][col_to_insert-1] - '0');
+				}
+			}
+			for(int r=rows-2; r>0; r--){ 
+				if(found_dot) break;
+				if(data[r][col_to_insert] == '.'){
+					dot_row = r;
+					for(int shiftIndex=dot_row; shiftIndex<rows-1; shiftIndex++){
+						if(data[shiftIndex][col_to_insert] == opponentTurn){
+							opScoreLater += (data[shiftIndex-1][col_to_insert-1] - '0');
+						}
+					}
+					found_dot = true;
+					break;
+				}
+			}
+			
+			if(found_dot){
+				for(int r=dot_row; r>0; r--){
+					if(data[r][col_to_insert] == opponentTurn){
+						opScoreLater += (data[r][col_to_insert-1] - '0');
+					}
+				}
+			}
 
+			else {
+				for(int r=1; r<rows-1; r++){
+					if(data[r][col_to_insert] == opponentTurn){
+						opScoreLater += (data[r-1][col_to_insert-1] - '0');
+					}
+				}
+			}
+			// compare opScore vs opScoreLater
+			//printf("386: Score of my, op, opafter: %d %d\n", opScore, opScoreLater);
+			if(opScoreLater < opScore){
+				is_valid_insert(myStruct, rows-1, c, true);
+				insert_board(file, myStruct, rows-1, c);
+				printf("Player %c placed at %d %d\n", opponentTurn, rows-1, c);
+				print_board(myStruct, stdout);
+				return;
+			}
 		}
 	}
 
@@ -457,9 +503,74 @@ void insert_at_edges(FILE* file, struct file_content* myStruct){
 		int opScore=0;
 		int opScoreLater=0;
 		if(is_valid_insert(myStruct, r, 0, false)){
-			
+			bool found_dot=false;
+			for(int c=3; c<2*cols-2; c+=2){ // at left col -> go right
+				if(data[r][c] == opponentTurn){
+					opScore += (data[r][c-1] - '0');
+				}
+			}
+			for(int c=3; c<2*cols-2; c+=2){ 
+				if(found_dot) break;
+				if(data[r][c] == '.'){
+					dot_col = c;
+					// Loop from left of the dot and cal score of op
+					for(int shiftIndex=3; shiftIndex<dot_col; shiftIndex+=2){
+						if(data[r][shiftIndex] == opponentTurn){
+							opScoreLater += data[r][shiftIndex+1] - '0';
+						}
+					}
+					found_dot = true;
+					break;
+				}
+			}
+			if(found_dot){
+				// Loop right of dot to cal opScoreLater
+				for(int c=dot_col; c<2*cols-2; c+=2){
+					if(data[r][c] == opponentTurn){
+						opScoreLater += (data[r][c-1] - '0');
+					}
+				}
+			}
+			else {
+				for(int c=1; c<2*cols-1; c++){
+					if(data[r][c] == opponentTurn){
+						opScoreLater += (data[r][c+1] - '0');
+					}
+				}
+			}
+			// compare opScore vs opScoreLater
+			if(opScoreLater < opScore){
+				is_valid_insert(myStruct, r, 0, true);
+				insert_board(file, myStruct, r, 0);
+				printf("Player %c placed at %d %d\n", myTurn, r, 0);
+				print_board(myStruct, stdout);
+				return;
+			}
 		}
 	}
+}
+
+void insert_at_interior(FILE* file, struct file_content* myStruct){
+	int rows = myStruct->row;
+	int cols = myStruct->col;
+	char** data = myStruct->data;
+	char myTurn = myStruct->turn;
+
+	for(int score=9; score>0; score--){
+		for(int r=1; r<rows-1; r++){
+			for(int c=1; c<cols-1; c++){
+					if((data[r][c*2]-'0') == score && data[r][c*2+1] == '.'){
+						printf("Score: %d\n", (data[r][c*2]-'0'));
+						insert_board(file,myStruct, r,c);
+						printf("Player %c placed at %d %d\n", myTurn, r, c);
+						print_board(myStruct, stdout);
+						return;
+					}
+			}
+		}
+	}
+
+
 }
 
 int main(int argc, char** argv){
@@ -626,7 +737,7 @@ int main(int argc, char** argv){
 					for(int c=numOfCols-4; c>1; c-=2){
 						if(myStruct.data[r][c] == '.'){
 							myStruct.data[r][c] = turn;
-							printf("Player %c placed at %d %d\n", turn, r, (c-1)/2);
+							 ("Player %c placed at %d %d\n", turn, r, (c-1)/2);
 							print_board(&myStruct, stdout);
 							myStruct.turn = 'O';
 							finish = true;
@@ -641,6 +752,7 @@ int main(int argc, char** argv){
 			// check 4 edges clockwise
 			insert_at_edges(file, &myStruct);
 			// check max score interior
+			insert_at_interior(file, &myStruct);
 		}
 
 	}
