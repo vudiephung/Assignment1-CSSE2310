@@ -328,7 +328,7 @@ void free_data(struct file_content* myStruct, char** data){
 	free(data);
 }
 
-void insert_at_edges(FILE* file, struct file_content* myStruct){
+void handle_type_1(FILE* file, struct file_content* myStruct){
 	char** data = myStruct->data;
 	int rows = myStruct->row;
 	int cols = myStruct->col;
@@ -380,14 +380,14 @@ void insert_at_edges(FILE* file, struct file_content* myStruct){
 						opScoreLater += (data[r+1][col_to_insert-1] - '0');
 					}
 				}
-				printf("Point: %d\n", opScoreLater);
+				//printf("Point: %d\n", opScoreLater);
 			}
 			// compare opScore vs opScoreLater
 			//printf("386: Score of my, op, opafter: %d %d\n", opScore, opScoreLater);
 			if(opScoreLater < opScore){
 				is_valid_insert(myStruct, 0, c, true);
 				insert_board(file, myStruct, 0, c);
-				printf("Player %c placed at %d %d\n", opponentTurn, 0, c);
+				printf("Player %c placed at %d %d\n", myTurn, 0, c);
 				print_board(myStruct, stdout);
 				return;
 			}
@@ -428,9 +428,9 @@ void insert_at_edges(FILE* file, struct file_content* myStruct){
 				}
 			}
 			else {
-				for(int c=1; c<2*cols-1; c++){
+				for(int c=3; c<2*cols-2; c+=2){
 					if(data[r][c] == opponentTurn){
-						opScoreLater += (data[r][c-1] - '0');
+						opScoreLater += (data[r][c-3] - '0');
 					}
 				}
 			}
@@ -491,7 +491,7 @@ void insert_at_edges(FILE* file, struct file_content* myStruct){
 			if(opScoreLater < opScore){
 				is_valid_insert(myStruct, rows-1, c, true);
 				insert_board(file, myStruct, rows-1, c);
-				printf("Player %c placed at %d %d\n", opponentTurn, rows-1, c);
+				printf("Player %c placed at %d %d\n", myTurn, rows-1, c);
 				print_board(myStruct, stdout);
 				return;
 			}
@@ -532,7 +532,7 @@ void insert_at_edges(FILE* file, struct file_content* myStruct){
 				}
 			}
 			else {
-				for(int c=1; c<2*cols-1; c++){
+				for(int c=3; c<2*cols-2; c+=2){
 					if(data[r][c] == opponentTurn){
 						opScoreLater += (data[r][c+1] - '0');
 					}
@@ -548,29 +548,21 @@ void insert_at_edges(FILE* file, struct file_content* myStruct){
 			}
 		}
 	}
-}
 
-void insert_at_interior(FILE* file, struct file_content* myStruct){
-	int rows = myStruct->row;
-	int cols = myStruct->col;
-	char** data = myStruct->data;
-	char myTurn = myStruct->turn;
-
+	// Insert at interior
 	for(int score=9; score>0; score--){
 		for(int r=1; r<rows-1; r++){
 			for(int c=1; c<cols-1; c++){
-					if((data[r][c*2]-'0') == score && data[r][c*2+1] == '.'){
-						printf("Score: %d\n", (data[r][c*2]-'0'));
-						insert_board(file,myStruct, r,c);
-						printf("Player %c placed at %d %d\n", myTurn, r, c);
-						print_board(myStruct, stdout);
-						return;
-					}
+				if((data[r][c*2]-'0') == score && data[r][c*2+1] == '.'){
+					//printf("Score: %d\n", (data[r][c*2]-'0'));
+					insert_board(file,myStruct, r,c);
+					printf("Player %c placed at %d %d\n", myTurn, r, c);
+					print_board(myStruct, stdout);
+					return;
+				}
 			}
 		}
 	}
-
-
 }
 
 int main(int argc, char** argv){
@@ -663,19 +655,11 @@ int main(int argc, char** argv){
     char line[20];
 
 	while(!is_end_game(&myStruct)){
-
-		//print_board(&myStruct, stdout);
-
 		char* saveName;
-		// What player turn?
+		
 		turn = myStruct.turn; // X or O // char
 
-		char currentType; // 0 1 H ?
-		if(turn == 'X'){
-			currentType = *playerX.type;
-		} else {
-			currentType = *playerO.type;
-		}
+		char currentType = (turn == 'X') ? *playerX.type : *playerO.type; // 0 1 H
 
 		if(currentType == 'H'){
 			printf("%c:(R C)> ", turn);
@@ -737,7 +721,7 @@ int main(int argc, char** argv){
 					for(int c=numOfCols-4; c>1; c-=2){
 						if(myStruct.data[r][c] == '.'){
 							myStruct.data[r][c] = turn;
-							 ("Player %c placed at %d %d\n", turn, r, (c-1)/2);
+							printf("Player %c placed at %d %d\n", turn, r, (c-1)/2);
 							print_board(&myStruct, stdout);
 							myStruct.turn = 'O';
 							finish = true;
@@ -749,10 +733,7 @@ int main(int argc, char** argv){
 		}
 
 		if(currentType == '1'){
-			// check 4 edges clockwise
-			insert_at_edges(file, &myStruct);
-			// check max score interior
-			insert_at_interior(file, &myStruct);
+			handle_type_1(file, &myStruct);
 		}
 
 	}
