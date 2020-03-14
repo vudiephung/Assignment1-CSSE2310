@@ -24,10 +24,6 @@ void print_board(struct file_content* myStruct, FILE* file){
 	int cols = myStruct->col;
 	int numOfCols = myStruct->numOfCols;
 	int turn = myStruct->turn;
-
-	// fprintf(file, "%d %d\n", rows, cols);
-	// fflush(file);
-	// fprintf(file, "%c\n", turn);
 	
 	for(int r=0; r<rows; r++){
 		for(int c=0; c<numOfCols; c++){
@@ -46,15 +42,11 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C, bool shift){
 	int col_to_insert = 2*C+1; // position in data
 	char** data = myStruct->data;
 
-	//printf("Line 45: %d %d %c\n",row_to_insert,col_to_insert, data[row_to_insert][col_to_insert]);
-
 	if(R>=rows || C>=cols) {
-		//printf("first.\n");
 		return false;
 	}
 
 	if(data[row_to_insert][col_to_insert] != '.'){
-		//printf("Second.\n");
 		return false;
 	}
 
@@ -70,7 +62,6 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C, bool shift){
 						data[shiftIndex][col_to_insert] = data[shiftIndex-1][col_to_insert];
 					}
 				}
-				//printf("Dot at %d %d (before shift)\n", i, col_to_insert);
 				isEmptyShell = true;
 				break;
 			}
@@ -85,7 +76,6 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C, bool shift){
 		bool invalids = C==0 || 
 						C==cols-1 ||
 						data[rows-2][col_to_insert] == '.';
-						//data[0][col_to_insert] != '.';
 		bool isEmptyShell = false;
 		for(int i=rows-2; i>=0; i--){
 				if(data[i][col_to_insert] == '.'){
@@ -94,7 +84,6 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C, bool shift){
 							data[shiftIndex][col_to_insert] = data[shiftIndex+1][col_to_insert];
 						}
 					}
-					//printf("Dot at %d %d (before shift)\n", i, col_to_insert);
 					isEmptyShell = true;
 					break;
 			}
@@ -127,7 +116,6 @@ bool is_valid_insert(struct file_content* myStruct, int R, int C, bool shift){
 	}
 
 	if(C==cols-1){
-		//printf("This one\n");
 		bool invalids = data[row_to_insert][col_to_insert-2] == '.'||
 						data[row_to_insert][1] != '.';
 		bool isEmptyShell = false;
@@ -232,8 +220,6 @@ void read_board(FILE* file, struct file_content* myStruct) {
 	int numOfCols = myStruct->col * 2 + 1;
 	int next = 0;
 	myStruct->valid=true;
-
-	//printf("%d %d \n", numOfRows, numOfCols);
 
 	while(1){
 		next = fgetc(file);
@@ -369,10 +355,8 @@ void handle_type_1(FILE* file, struct file_content* myStruct){
 						opScoreLater += (data[r+1][col_to_insert-1] - '0');
 					}
 				}
-				//printf("Point: %d\n", opScoreLater);
 			}
 			// compare opScore vs opScoreLater
-			//printf("386: Score of my, op, opafter: %d %d\n", opScore, opScoreLater);
 			if(opScoreLater < opScore){
 				is_valid_insert(myStruct, 0, c, true);
 				insert_board(file, myStruct, 0, c);
@@ -543,7 +527,6 @@ void handle_type_1(FILE* file, struct file_content* myStruct){
 		for(int r=1; r<rows-1; r++){
 			for(int c=1; c<cols-1; c++){
 				if((data[r][c*2]-'0') == score && data[r][c*2+1] == '.'){
-					//printf("Score: %d\n", (data[r][c*2]-'0'));
 					insert_board(file,myStruct, r,c);
 					printf("Player %c placed at %d %d\n", myTurn, r, c);
 					print_board(myStruct, stdout);
@@ -597,11 +580,7 @@ int main(int argc, char** argv){
 		else if(count == 2){
 			myStruct.col = temp;
 		}
-		//printf("Temp: %d\n", temp);
   	}
-	// printf("count numbers of int: %d\n", count);
-	// printf("Rows: %d\n", myStruct.row);
-	// printf("Cols: %d\n", myStruct.col);
 
 	if(count != 2 || myStruct.row < 3 || myStruct.col < 3){
 		fprintf(stderr, "Invalid file contents\n");
@@ -651,7 +630,7 @@ int main(int argc, char** argv){
 	while(!is_end_game(&myStruct)){
 		char input[30];
 		
-		turn = myStruct.turn; // X or O // char
+		turn = myStruct.turn; // X or O
 
 		char currentType = (turn == 'X') ? *playerX.type : *playerO.type; // 0 1 H
 
@@ -664,7 +643,6 @@ int main(int argc, char** argv){
 			}	
 
 			returnValue = sscanf(line, "%s %n", input, &bufPos);
-			//printf("Return value: %d\n", returnValue);
 			if(returnValue==1 && line[bufPos]=='\0' && input[0]=='s'){
 				FILE* file_write;
 				file_write = fopen((input+1), "w");
