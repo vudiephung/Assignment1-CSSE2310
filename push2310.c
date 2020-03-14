@@ -246,14 +246,11 @@ void read_board(FILE* file, struct file_content* myStruct) {
 	for(int r=0; r<numOfRows; r++){
 		if(!myStruct->valid) break;
 		for(int c=0; c<numOfCols; c++){
-			//if (next == EOF) break;
 			// check numbers of 4 edges must be 0
 			if(r==0 || r==numOfRows-1){
 				if(c > 1 && c < numOfCols-3 && c%2==0){
-					//printf("This line '%d' '%d' '%c'\n", r,c, (char)next);
 					if((char)next-'0' != 0){
 						myStruct->valid = false;
-						printf("Line 257\n");
 						break;
 					}
 				}
@@ -262,7 +259,6 @@ void read_board(FILE* file, struct file_content* myStruct) {
 				if(c == 0 || c==numOfCols-3){
 					if((char)next-'0' != 0){
 						myStruct->valid = false;
-						printf("Line 269: %c %d %d\n", (char)next, r,c);
 						break;
 					}
 				}
@@ -271,9 +267,7 @@ void read_board(FILE* file, struct file_content* myStruct) {
 			//
 			if(next == '\n'){
 				data[r][c] = '\n';
-				//printf("hi %c %d %d \n", data[r][c], r, c);
 				next = fgetc(file);
-				//break;
 			}
 			else{
 				if( (char)next-'0' == 0 ||
@@ -292,7 +286,6 @@ void read_board(FILE* file, struct file_content* myStruct) {
 					(char)next == ' ' 	
 				){
 					data[r][c] = (char)next;
-					//printf("%c %d %d \n", data[r][c], r, c);
 					next = fgetc(file);
 				}
 				else{
@@ -310,13 +303,9 @@ void read_board(FILE* file, struct file_content* myStruct) {
 
 	if(data[rowCheck][colCheck] != ' ' || data[rowCheck][colCheck+1] != ' '){
 		myStruct->valid = false;
-		//printf("Invalid from line 91\n");
 		return;
 	}
 	
-	// printf("Value at rc cc: '%c' '%c'\n", data[rowCheck][colCheck], data[rowCheck][colCheck+1]);
-	// printf("rowcheck, colcheck valid: %d %d %d\n", rowCheck, colCheck, myStruct->valid);
-
 	myStruct->data = data;
 }
 
@@ -648,14 +637,19 @@ int main(int argc, char** argv){
 		return 4;
 	}
 
+	if(is_end_game(&myStruct)){
+		fprintf(stderr, "Full board in load\n");
+		return 6;
+	}
+
 	print_board(&myStruct, stdout);
 
 	// Base on player type 
 	int R,C, bufPos, returnValue;
-    char line[20];
+    char line[50];
 
 	while(!is_end_game(&myStruct)){
-		char* saveName;
+		char input[30];
 		
 		turn = myStruct.turn; // X or O // char
 
@@ -664,27 +658,26 @@ int main(int argc, char** argv){
 		if(currentType == 'H'){
 			printf("%c:(R C)> ", turn);
 
-				// if(scanf("%c%s", "s", saveName) == 2){
-				// 	printf("388: %s\n", saveName);
-				// 	// save File 
-				// 	FILE* file_write;
-				// 	file_write = fopen(saveName, "w");
-				// 	print_board(&myStruct, file_write);
-				// 	fclose(file_write);
-				// }
-
 			if(fgets(line, sizeof(line), stdin) == 0){
 				fprintf(stderr, "End of file\n");
 				return 5;
-			}
+			}	
 
-				// if (fgets(buffer, 80, fin)==0) {
-				// return 1;
-				// }
+			returnValue = sscanf(line, "%s %n", input, &bufPos);
+			//printf("Return value: %d\n", returnValue);
+			if(returnValue==1 && line[bufPos]=='\0' && input[0]=='s'){
+				FILE* file_write;
+				file_write = fopen((input+1), "w");
+				fprintf(file_write, "%d %d\n", myStruct.row, myStruct.col);
+				fflush(file_write);
+				fprintf(file_write, "%c\n", turn);
+				fflush(file_write);
+				print_board(&myStruct, file_write);
+				fclose(file_write);
+				return 0;
+			}	
 
 			returnValue = sscanf(line, "%d %d %n", &R, &C, &bufPos);
-				// printf("Return value: '%d'\n", bufPos);
-				// printf("line[bufPos]: '%c'\n", line[bufPos]);
 
 			if (returnValue==2 && line[bufPos] == '\0'){
 				bool valid = is_valid_insert(&myStruct, R,C, true);
@@ -698,9 +691,7 @@ int main(int argc, char** argv){
 
 		if(currentType == '0'){
 			bool finish = false;
-			//print_board(&myStruct, stdout);
 			if(turn == 'O'){ //left to right 
-				//printf("Line 463\n");
 				for(int r=1; r<numOfRows-1; r++){
 					if(finish) break;
 					for(int c=3; c<numOfCols-3; c+=2){
