@@ -61,7 +61,7 @@ int handle_error_123(int argc, char **argv){
 	
 	for (int index = 1; index < 3; index++) {
 		if (strcmp(argv[index], "0") && strcmp(argv[index], "1") && strcmp(argv[index], "H")) {
-			fprintf(stderr, "Invalid player Type\n");
+			fprintf(stderr, "Invalid player type\n");
 			fflush(stderr);
 
 			return 2;
@@ -373,7 +373,7 @@ void insert_board(FILE* file, struct Myfile *myStruct, int R, int C) {
 		data[rowToInsert][colToInsert - 2] = *turn;
 	} 
 	else data[rowToInsert][colToInsert] = *turn;
-	
+
 	*turn = *turn == 'X' ? 'O' : 'X'; 
 	
 	//Modify data
@@ -482,8 +482,8 @@ void handle_type0(FILE *file, struct Myfile *myStruct) {
 // when a position on an edge is found to lower the oppoonent score
 void handle_lower_score(FILE *file, struct Myfile *myStruct, int rowToInsert, int colToInsert){
 	is_valid_insert(myStruct, rowToInsert, colToInsert, true);
-	insert_board(file, myStruct, rowToInsert, colToInsert);
 	printf("Player %c placed at %d %d\n", myStruct->turn, rowToInsert, colToInsert);
+	insert_board(file, myStruct, rowToInsert, colToInsert);
 	print_board(myStruct, stdout);
 }
 
@@ -647,14 +647,13 @@ void insert_interior(FILE *file, struct Myfile *myStruct){
 	int rows = myStruct->rows;
 	int cols = myStruct->cols;
 	char **data = myStruct->data;
-	char myTurn = myStruct->turn;
 
 	for (int score=9; score > 0; score--) {
 		for (int r = 1; r < rows - 1; r++) {
 			for (int c = 1; c < cols - 1; c++) {
 				if ((data[r][c * 2]-'0') == score && data[r][c * 2 + 1] == '.') {
+					printf("Player %c placed at %d %d\n", myStruct->turn, r, c);
 					insert_board(file, myStruct, r, c);
-					printf("Player %c placed at %d %d\n", myTurn, r, c);
 					print_board(myStruct, stdout);
 
 					return;
