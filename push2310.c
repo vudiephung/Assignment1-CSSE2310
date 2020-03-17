@@ -17,7 +17,7 @@ struct Myfile {
 
 // struct Player defines type of Player O and Player X: 0 1H
 struct Player {
-	char *type; // 0 1 H
+	char *type; 		// 0 1 H
 };
 
 // function print_board take the struct and the given file pointer as parameters 
@@ -244,7 +244,7 @@ bool is_valid_insert_at_top(char **data, int rows, int cols, int c, int colToIns
 	}
 }
 
-bool is_valid_insert_at_botttom(char **data, int rows, int cols, int c, int colToInsert, bool shift){
+bool is_valid_insert_at_bottom(char **data, int rows, int cols, int c, int colToInsert, bool shift){
 	bool invalids = c == 0 || c == cols - 1 || data[rows - 2][colToInsert] == '.';
 	bool isEmptyShell = false;
 
@@ -333,19 +333,19 @@ bool is_valid_insert(struct Myfile *myStruct, int r, int c, bool shift) {
 	}
 
 	if (r == 0) {
-		return is_valid_insert_at_top(data, shift, rows, cols, c, colToInsert);
+		return is_valid_insert_at_top(data, rows, cols, c, colToInsert, shift);
 	} 
 
 	if (r == rows - 1) {
-		return is_valid_insert_at_botttom(data, shift, rows, cols, c, colToInsert);
+		return is_valid_insert_at_bottom(data, rows, cols, c, colToInsert, shift);
 	}
 
 	if (c == 0) {
-		return is_valid_insert_at_left(data, shift, rows, cols, r, rowToInsert, colToInsert);
+		return is_valid_insert_at_left(data, rows, cols, r, rowToInsert, colToInsert, shift);
 	}
 
 	if (c == cols - 1) {
-		return is_valid_insert_at_right(data, shift, rows, cols, r, rowToInsert, colToInsert);
+		return is_valid_insert_at_right(data, rows, cols, r, rowToInsert, colToInsert, shift);
 	}
 
 	return true;
@@ -407,7 +407,7 @@ bool is_end_game(struct Myfile *myStruct) {
 void find_winner(struct Myfile *myStruct) {
 	char **data = myStruct->data;
 	int rows = myStruct->rows;
-	int numOfCols = myStruct->numOfCols;
+	int numOfCols = myStruct->cols * 2 + 1;
 	int scoreX = 0;
 	int scoreO = 0;
 
@@ -573,7 +573,7 @@ bool calculate_insert_bottom(FILE *file, struct Myfile *myStruct){
 	char **data = myStruct->data;
 	char opponentTurn = myStruct->turn == 'X' ? 'O' : 'X';
 	bool canInsert = false;
-	
+
 	for (int c = cols - 2; c > 0; c--) {
 		int opponentScore = 0;
 		int opponentScoreLater = 0;	 
@@ -603,7 +603,7 @@ bool calculate_insert_bottom(FILE *file, struct Myfile *myStruct){
 			} 
 		}
 	}
-	
+
 	return canInsert;
 }
 
@@ -685,6 +685,7 @@ void handle_type1(FILE *file, struct Myfile *myStruct) {
 	if (calculate_insert_left(file, myStruct)) {
 		return;
 	}
+
 	// Insert at interior
 	insert_interior(file, myStruct);
 }
@@ -811,7 +812,7 @@ int main(int argc, char **argv) {
 	print_board(&myStruct, stdout);
 
 	// PlayerO and PlayerX are the instances of struct Player,
-	// is used to store type of each player
+	// This strucy is used to store type of each player
 	struct Player playerO, playerX;
 	playerO.type = argv[1];
 	playerX.type = argv[2];
