@@ -5,138 +5,138 @@
 
 // struct Myfile defines needed variables for a given board
 struct Myfile {
-	int rows;			// given rows
-	int cols;			// given columns
-	int numOfCols;		// numOfCols = 2 * cols + 1 : Number of cols to insert into array
-	char turn;			// turn of next player: X or O
-	char **data;		// store the information of the board
-	bool validBoard;	// determine whether the given board is valid or not
-	int exitCode;		// exitCode of the program: From 0 to 6
-	char Winners;		// winner of the game
+    int rows;			// given rows
+    int cols;			// given columns
+    int numOfCols;		// numOfCols = 2 * cols + 1 : Number of cols to insert into array
+    char turn;			// turn of next player: X or O
+    char **data;		// store the information of the board
+    bool validBoard;	// determine whether the given board is valid or not
+    int exitCode;		// exitCode of the program: From 0 to 6
+    char Winners;		// winner of the game
 };
 
 // struct Player defines type of Player O and Player X: 0 1H
 struct Player {
-	char *type; 		// 0 1 H
+    char *type; 		// 0 1 H
 };
 
 // function print_board take the struct and the given file pointer as parameters 
 // to write board on that given file
 void print_board(struct Myfile *myStruct, FILE* file) {
-	char **data = myStruct->data;
-	int rows = myStruct->rows;
-	int numOfCols = myStruct->cols * 2 + 1;
+    char **data = myStruct->data;
+    int rows = myStruct->rows;
+    int numOfCols = myStruct->cols * 2 + 1;
 	
-	for (int r = 0; r < rows; r++) {
-		for (int c = 0; c < numOfCols; c++) {
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < numOfCols; c++) {
 			if (data[r][c] == '\n') {
 				fprintf(file, "\n");
 			}
 			else {
 				fprintf(file, "%c", data[r][c]); 
 			} 
-		}
-	}
+        }
+    }
 }
 
 // function free_data delete the allocated memory
 // and number of rows as the parametere
 void free_data(char **data, int rows) {
-	for (int r = 0; r < rows ; r++) {
-		free(data[r]);
-	}
+    for (int r = 0; r < rows ; r++) {
+        free(data[r]);
+    }
 
-	free(data);
+    free(data);
 }
 
 // Handle errors of exit code 1,2,3
 // Take argc, argv of main() function as parameters
-int handle_error_123(int argc, char **argv){
-	if (argc != 4) {
-		fprintf(stderr, "Usage: push2310 typeO typeX fname\n");
-		fflush(stderr);
+int handle_error_123(int argc, char **argv) {
+    if (argc != 4) {
+        fprintf(stderr, "Usage: push2310 typeO typeX fname\n");
+        fflush(stderr);
 
-		return 1;	
-	}
+        return 1;	
+    }
 	
-	for (int index = 1; index < 3; index++) {
-		if (strcmp(argv[index], "0") && strcmp(argv[index], "1") && strcmp(argv[index], "H")) {
-			fprintf(stderr, "Invalid player type\n");
-			fflush(stderr);
+    for (int index = 1; index < 3; index++) {
+        if (strcmp(argv[index], "0") && strcmp(argv[index], "1") && strcmp(argv[index], "H")) {
+            fprintf(stderr, "Invalid player type\n");
+            fflush(stderr);
 
-			return 2;
-		}
-	}
+            return 2;
+        }
+    }
 
-	char *fileName = argv[3];
-	FILE* file;
-	file = fopen(fileName, "r");
+    char *fileName = argv[3];
+    FILE* file;
+    file = fopen(fileName, "r");
 
-	if (file == NULL) {
-		fprintf(stderr, "No file to load from\n");
-		fflush(stderr);
+    if (file == NULL) {
+        fprintf(stderr, "No file to load from\n");
+        fflush(stderr);
 
-		return 3;
-	}
+        return 3;
+    }
 
-	return 0;
+    return 0;
 }
 
 // this function returns a file pointer to a given file name that
 // took from the argv[3] of main() function
-FILE* get_file_to_read(char **argv){
-	char *fileName = argv[3];
-	FILE* file;
-	file = fopen(fileName, "r");
+FILE* get_file_to_read(char **argv) {
+    char *fileName = argv[3];
+    FILE* file;
+    file = fopen(fileName, "r");
 
-	return file;
+    return file;
 }
 
 // this function takes the pointer to a file to read rows and columns from it
 // and then save it into given struct
-void read_rows_cols(FILE *file, struct Myfile *myStruct){
-	char **data = myStruct->data;
-	int temp;
-	int count = 0;
+void read_rows_cols(FILE *file, struct Myfile *myStruct) {
+    char **data = myStruct->data;
+    int temp;
+    int count = 0;
 
-	while (fscanf(file, "%d", &temp) == 1) {
- 		count++;
+    while (fscanf(file, "%d", &temp) == 1) {
+        count++;
 
-		if (count == 1) {
-			myStruct->rows = temp;
-		} else if (count == 2) {
-			myStruct->cols = temp;
-		}
-	}
+        if (count == 1) {
+            myStruct->rows = temp;
+        } else if (count == 2) {
+            myStruct->cols = temp;
+        }
+    }
 
-	if (count != 2 || myStruct->rows < 3 || myStruct->cols < 3) {
-		myStruct->exitCode = 4;
-		myStruct->validBoard = false;
-		fprintf(stderr, "Invalid file contents\n");
-	}
+    if (count != 2 || myStruct->rows < 3 || myStruct->cols < 3) {
+        myStruct->exitCode = 4;
+        myStruct->validBoard = false;
+        fprintf(stderr, "Invalid file contents\n");
+    }
 }
 
 // this function takes the pointer to a file, struct pointer and int next = fgetc(file)
 // as parameters to read player turn of that file, then save turn to a given struct
 // if turn is not valid, set an exit code to struct and print the error
-void read_turn(FILE *file, struct Myfile *myStruct, int *next){
-	char turn = (char)(*next);
+void read_turn(FILE *file, struct Myfile *myStruct, int *next) {
+    char turn = (char)(*next);
 
-	if (turn != 'X' && turn != 'O') {
-		myStruct->exitCode = 4;
-		myStruct->validBoard = false;
-		fprintf(stderr, "Invalid file contents\n");
-	} else {
-		myStruct->turn = turn;
-	}
+    if (turn != 'X' && turn != 'O') {
+        myStruct->exitCode = 4;
+        myStruct->validBoard = false;
+        fprintf(stderr, "Invalid file contents\n");
+    } else {
+        myStruct->turn = turn;
+    }
 
-	while (1) {
-		*next = fgetc(file);
-		if (*next == '\n') {
-			*next = fgetc(file);
-			break;
-		}
-	}
+    while (1) {
+        *next = fgetc(file);
+        if (*next == '\n') {
+            *next = fgetc(file);
+            break;
+        }
+    }
 }
 
 // after read rows, columns and turn, this function is then used to read the board
@@ -221,7 +221,7 @@ void read_file(FILE *file, struct Myfile *myStruct) {
 // place to insert into edge of the board ('c' or 'r') and place to insert into array data
 // ('colToInsert' or 'rowToInsert') and boolean 'shift' (determines whether it should push
 // the elements along or not) as arguments
-bool is_valid_insert_at_top(char **data, int rows, int cols, int c, int colToInsert, bool shift){
+bool is_valid_insert_at_top(char **data, int rows, int cols, int c, int colToInsert, bool shift) {
 	bool invalids = c == 0 || c == cols - 1 || data[1][colToInsert] == '.';
 	bool isEmptyShell = false;
 
@@ -244,7 +244,7 @@ bool is_valid_insert_at_top(char **data, int rows, int cols, int c, int colToIns
 	}
 }
 
-bool is_valid_insert_at_bottom(char **data, int rows, int cols, int c, int colToInsert, bool shift){
+bool is_valid_insert_at_bottom(char **data, int rows, int cols, int c, int colToInsert, bool shift) {
 	bool invalids = c == 0 || c == cols - 1 || data[rows - 2][colToInsert] == '.';
 	bool isEmptyShell = false;
 
@@ -267,7 +267,7 @@ bool is_valid_insert_at_bottom(char **data, int rows, int cols, int c, int colTo
 	}
 }
 
-bool is_valid_insert_at_left(char **data, int rows, int cols, int r, int rowToInsert, int colToInsert, bool shift){
+bool is_valid_insert_at_left(char **data, int rows, int cols, int r, int rowToInsert, int colToInsert, bool shift) {
 		bool invalids = data[rowToInsert][colToInsert + 2] == '.' ||
 						data[rowToInsert][2 * cols - 1] != '.';
 		bool isEmptyShell = false;
@@ -291,7 +291,7 @@ bool is_valid_insert_at_left(char **data, int rows, int cols, int r, int rowToIn
 		}
 }
 
-bool is_valid_insert_at_right(char **data, int rows, int cols, int r, int rowToInsert, int colToInsert, bool shift){
+bool is_valid_insert_at_right(char **data, int rows, int cols, int r, int rowToInsert, int colToInsert, bool shift) {
 	bool invalids = data[rowToInsert][colToInsert - 2] == '.' ||
 					data[rowToInsert][1] != '.';
 	bool isEmptyShell = false;
@@ -480,7 +480,7 @@ void handle_type0(FILE *file, struct Myfile *myStruct) {
 
 // this function is used to support one of 4 below functions and to decide what to do
 // when a position on an edge is found to lower the oppoonent score
-void handle_lower_score(FILE *file, struct Myfile *myStruct, int rowToInsert, int colToInsert){
+void handle_lower_score(FILE *file, struct Myfile *myStruct, int rowToInsert, int colToInsert) {
 	is_valid_insert(myStruct, rowToInsert, colToInsert, true);
 	printf("Player %c placed at %d %d\n", myStruct->turn, rowToInsert, colToInsert);
 	insert_board(file, myStruct, rowToInsert, colToInsert);
@@ -490,7 +490,7 @@ void handle_lower_score(FILE *file, struct Myfile *myStruct, int rowToInsert, in
 // these 4 functions support handle_type1()
 // if one of the edge is determined to lower the opponent score, 
 // it return true and otherwise
-bool calculate_insert_top(FILE *file, struct Myfile *myStruct){
+bool calculate_insert_top(FILE *file, struct Myfile *myStruct) {
 	int rows = myStruct->rows;
 	int cols = myStruct->cols;
 	char **data = myStruct->data;
@@ -530,7 +530,7 @@ bool calculate_insert_top(FILE *file, struct Myfile *myStruct){
 	return canInsert;
 }
 
-bool calculate_insert_right(FILE *file, struct Myfile *myStruct){
+bool calculate_insert_right(FILE *file, struct Myfile *myStruct) {
 	int rows = myStruct->rows;
 	int cols = myStruct->cols;
 	char **data = myStruct->data;
@@ -569,7 +569,7 @@ bool calculate_insert_right(FILE *file, struct Myfile *myStruct){
 	return canInsert;
 }
 
-bool calculate_insert_bottom(FILE *file, struct Myfile *myStruct){
+bool calculate_insert_bottom(FILE *file, struct Myfile *myStruct) {
 	int rows = myStruct->rows;
 	int cols = myStruct->cols;
 	char **data = myStruct->data;
@@ -610,7 +610,7 @@ bool calculate_insert_bottom(FILE *file, struct Myfile *myStruct){
 	return canInsert;
 }
 
-bool calculate_insert_left(FILE *file, struct Myfile *myStruct){
+bool calculate_insert_left(FILE *file, struct Myfile *myStruct) {
 	int rows = myStruct->rows;
 	int cols = myStruct->cols;
 	char **data = myStruct->data;
@@ -647,10 +647,10 @@ bool calculate_insert_left(FILE *file, struct Myfile *myStruct){
 
 // type 1: when there are no edges to throw a stone to lower the opponent score,
 // this function is used to throw a stone at the highest score in the interior
-void insert_interior(FILE *file, struct Myfile *myStruct){
-	int rows = myStruct->rows;
-	int cols = myStruct->cols;
-	char **data = myStruct->data;
+void insert_interior(FILE *file, struct Myfile *myStruct) {
+    int rows = myStruct->rows;
+    int cols = myStruct->cols;
+    char **data = myStruct->data;
 
 	for (int score=9; score > 0; score--) {
 		for (int r = 1; r < rows - 1; r++) {
@@ -670,8 +670,8 @@ void insert_interior(FILE *file, struct Myfile *myStruct){
 // combine those 5 upper functions
 void handle_type1(FILE *file, struct Myfile *myStruct) {
 	// top: left to right
-	if (calculate_insert_top(file, myStruct)) {
-		return;
+    if (calculate_insert_top(file, myStruct)) {
+        return;
 	}
 
 	// right: top to bottom
@@ -789,7 +789,7 @@ int main(int argc, char **argv) {
 	// check error from 1-3 when running an executable file
 	int errorCode = handle_error_123(argc,argv);
 
-	if (errorCode > 0){
+	if (errorCode > 0) {
 		return errorCode;
 	}
 
