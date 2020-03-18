@@ -522,6 +522,7 @@ bool calculate_insert_top(FILE *file, struct Myfile *myStruct){
 			if (opponentScoreLater < opponentScore) {
 				handle_lower_score(file, myStruct, 0, c);
 				canInsert = true;
+				break;
 			}
 		}
 	}
@@ -556,10 +557,11 @@ bool calculate_insert_right(FILE *file, struct Myfile *myStruct){
 					break;
 				}
 			}
-			
+
 			if (opponentScoreLater < opponentScore) {
 				handle_lower_score(file, myStruct, r, cols - 1);
 				canInsert = true;
+				break;
 			}
 		}
 	}
@@ -586,7 +588,7 @@ bool calculate_insert_bottom(FILE *file, struct Myfile *myStruct){
 				if (isDotFound) {
 					break;
 				}
-				
+
 				if (data[r][colToInsert] == opponentTurn) {
 					opponentScore += (data[r][colToInsert - 1] - '0');
 					opponentScoreLater += (data[r - 1][colToInsert - 1] - '0');
@@ -600,6 +602,7 @@ bool calculate_insert_bottom(FILE *file, struct Myfile *myStruct){
 			if (opponentScoreLater < opponentScore) {
 				handle_lower_score(file, myStruct, rows - 1, c);
 				canInsert = true;
+				break;
 			} 
 		}
 	}
@@ -614,7 +617,7 @@ bool calculate_insert_left(FILE *file, struct Myfile *myStruct){
 	char opponentTurn = myStruct->turn == 'X' ? 'O' : 'X';
 	bool canInsert = false;
 
-	for (int r = rows - 1; r > 0; r--) {
+	for (int r = rows - 2; r > 0; r--) {
 		int opponentScore = 0;
 		int opponentScoreLater = 0;
 
@@ -630,12 +633,13 @@ bool calculate_insert_left(FILE *file, struct Myfile *myStruct){
 					break;
 				}
 			}
-		}
 
-		if (opponentScoreLater < opponentScore) {
-			handle_lower_score(file, myStruct, r, 0);
-			canInsert = true;
-		} 
+			if (opponentScoreLater < opponentScore) {
+				handle_lower_score(file, myStruct, r, 0);
+				canInsert = true;
+				break;
+			} 
+		}
 	}
 
 	return canInsert;
