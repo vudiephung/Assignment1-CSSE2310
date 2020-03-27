@@ -643,6 +643,7 @@ void find_winner(struct Myfile *myStruct) {
     }
 }
 
+// Type O
 /* Function: handle_type0
  * ---------------------
  * Run when type 0 is identified
@@ -991,6 +992,7 @@ void handle_type1(struct Myfile *myStruct) {
     insert_interior(myStruct);
 }
 
+// Type H
 /* handle_save_file
  * ---------------------
  * Open a file to save the playing game and close it
