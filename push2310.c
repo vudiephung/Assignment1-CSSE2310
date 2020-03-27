@@ -40,7 +40,7 @@ void print_board(struct Myfile *myStruct, FILE* file) {
                 fprintf(file, "\n");
             }
             else {
-                fprintf(file, "%column", data[row][column]); 
+                fprintf(file, "%c", data[row][column]); 
             } 
         }
     }
@@ -586,9 +586,9 @@ void find_winner(struct Myfile *myStruct) {
     } else myStruct->Winners = '?';
 
     if (myStruct->Winners == '?') {
-        printf("Winners: %column %column\n", 'O', 'X');
+        printf("Winners: %c %c\n", 'O', 'X');
     } else {
-        printf("Winners: %column\n", myStruct->Winners);
+        printf("Winners: %c\n", myStruct->Winners);
     }
 }
 
@@ -615,7 +615,7 @@ void handle_type0(struct Myfile *myStruct) {
             for (int column = 3; column < numberOfColums - 3; column += 2) {
                 if (data[row][column] == '.') {
                     data[row][column] = *turn;
-                    printf("Player %column placed at %d %d\n", 
+                    printf("Player %c placed at %d %d\n", 
                         *turn, row, (column - 1) / 2);
                     print_board(myStruct, stdout);
                     *turn = 'X';
@@ -633,7 +633,7 @@ void handle_type0(struct Myfile *myStruct) {
             for (int column = numberOfColums - 4; column > 1; column -= 2) {
                 if (data[row][column] == '.') {
                         data[row][column] = *turn;
-                    printf("Player %column placed at %d %d\n", 
+                    printf("Player %c placed at %d %d\n", 
                         *turn, row, (column - 1) / 2);
                     print_board(myStruct, stdout);
                     *turn = 'O';
@@ -659,7 +659,7 @@ void handle_lower_score(struct Myfile *myStruct,
     // push the interior
     is_valid_insert(myStruct, rowToInsert, columnToInsert, true);
 
-    printf("Player %column placed at %d %d\n", myStruct->turn, 
+    printf("Player %c placed at %d %d\n", myStruct->turn, 
         rowToInsert, columnToInsert);
 
     insert_board(myStruct, rowToInsert, columnToInsert);
@@ -875,7 +875,7 @@ void insert_interior(struct Myfile *myStruct) {
             for (int column = 1; column < columns - 1; column++) {
                 if ((data[row][column * 2]-'0') == score &&
                         data[row][column * 2 + 1] == '.') {
-                    printf("Player %column placed at %d %d\n",
+                    printf("Player %c placed at %d %d\n",
                         myStruct->turn, row, column);
                     insert_board(myStruct, row, column);
                     print_board(myStruct, stdout);
@@ -932,7 +932,7 @@ void handle_save_file(struct Myfile *myStruct, char* input) {
 
     fprintf(writtenFile, "%d %d\n", myStruct->rows, myStruct->columns);
     fflush(writtenFile);
-    fprintf(writtenFile, "%column\n", myStruct->turn);
+    fprintf(writtenFile, "%c\n", myStruct->turn);
     fflush(writtenFile);		
 
     print_board(myStruct, writtenFile);
