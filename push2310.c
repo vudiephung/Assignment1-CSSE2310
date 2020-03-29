@@ -12,7 +12,7 @@ struct Myfile {
     char **data;		// store the information of the board
     bool validBoard;	// determine whether the given board is valid or not
     int exitCode;		// exitCode of the program: From 0 to 6
-    char Winners;		// winner of the game
+    char winner;		// winner of the game
 };
 
 // struct Player defines type of Player O and Player X: 0 1H
@@ -349,9 +349,9 @@ bool is_valid_insert_at_bottom(char **data, int rows, int columns, int column,
         if (data[row][columnToInsert] == '.') {
             if (shift) {
                 for (int shiftIndex = row; shiftIndex < rows - 1; 
-                    shiftIndex++) {
+                        shiftIndex++) {
                 data[shiftIndex][columnToInsert] = 
-                    data[shiftIndex + 1][columnToInsert];
+                        data[shiftIndex + 1][columnToInsert];
                 }
             }
             isEmptyShell = true;
@@ -393,7 +393,7 @@ bool is_valid_insert_at_left(char **data, int rows, int columns, int row,
                 for (int shiftIndex = row; shiftIndex >= 3; 
                         shiftIndex -= 2) {
                     data[rowToInsert][shiftIndex] = 
-                        data[rowToInsert][shiftIndex - 2];
+                            data[rowToInsert][shiftIndex - 2];
                 }
             }
             isEmptyShell = true;
@@ -590,17 +590,17 @@ void find_winner(struct Myfile *myStruct) {
     }
 
     if (scoreX > scoreO) {
-        myStruct->Winners = 'X';
+        myStruct->winner = 'X';
     } else if (scoreO > scoreX) {
-        myStruct->Winners = 'O';
+        myStruct->winner = 'O';
     } else {
-        myStruct->Winners = '?';
+        myStruct->winner = '?';
     }
 
-    if (myStruct->Winners == '?') {
-        printf("Winners: %c %c\n", 'O', 'X');
+    if (myStruct->winner == '?') {
+        printf("winner: %c %c\n", 'O', 'X');
     } else {
-        printf("Winners: %c\n", myStruct->Winners);
+        printf("winner: %c\n", myStruct->winner);
     }
 }
 
@@ -659,7 +659,7 @@ void handle_type0_x(struct Myfile *myStruct) {
 
         for (int column = numberOfColums - 4; column > 1; column -= 2) {
             if (data[row][column] == '.') {
-                        data[row][column] = *turn;
+                data[row][column] = *turn;
                 printf("Player %c placed at %d %d\n", 
                         *turn, row, (column - 1) / 2);
                 print_board(myStruct, stdout);
@@ -915,7 +915,7 @@ void insert_interior(struct Myfile *myStruct) {
         for (int row = 1; row < rows - 1; row++) {
             for (int column = 1; column < columns - 1; column++) {
                 if ((data[row][column * 2] - '0') == score &&
-                            data[row][column * 2 + 1] == '.') {
+                        data[row][column * 2 + 1] == '.') {
                     printf("Player %c placed at %d %d\n",
                             myStruct->turn, row, column);
                     insert_board(myStruct, row, column);
@@ -982,7 +982,7 @@ void handle_save_file(struct Myfile *myStruct, char *input) {
 }
 
 
-/** handle_type_H
+/** handle_type_h
  * Get user input to throw a stone at the given position,
  * stop playing when Ctrl+D is detected or throw an error when a file name
  * of saving game is invalid
@@ -990,7 +990,7 @@ void handle_save_file(struct Myfile *myStruct, char *input) {
  * myStruct: get the needed information from myStruct
  * Return: true if input (R C) from player is valid and false otherwise
 */
-bool handle_type_H(struct Myfile *myStruct) {
+bool handle_type_h(struct Myfile *myStruct) {
     char *turn = &myStruct->turn;
     int row, column, bufPosition, returnValue; 
     char line[50];
@@ -1054,7 +1054,7 @@ void play_game(struct Myfile *myStruct, char typeOfPlayerX,
         char currentType = (*turn == 'X') ? typeOfPlayerX : typeOfPlayerO;
 
         if (currentType == 'H') {
-            bool isValidInput = handle_type_H(myStruct);
+            bool isValidInput = handle_type_h(myStruct);
             if (myStruct->exitCode == 5) {
                 break;
             }
