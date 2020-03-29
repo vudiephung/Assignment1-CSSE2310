@@ -22,14 +22,14 @@ struct Player {
 
 /** Function: print_board
  * Two purposes: Display the board to the screen or save game
- * (Depends on FILE* file)
+ * (Depends on FILE *file)
  * Parameters: 
  * myStruct: Information of the board
  * file: two usages: stdout to display the board or write the board to
  * given file
  * Return: Nothing
 */
-void print_board(struct Myfile *myStruct, FILE* file) {
+void print_board(struct Myfile *myStruct, FILE *file) {
     char **data = myStruct->data;
     int rows = myStruct->rows;
     int numberOfColums = myStruct->columns * 2 + 1;
@@ -38,8 +38,7 @@ void print_board(struct Myfile *myStruct, FILE* file) {
         for (int column = 0; column < numberOfColums; column++) {
             if (data[row][column] == '\n') {
                 fprintf(file, "\n");
-            }
-            else {
+            } else {
                 fprintf(file, "%c", data[row][column]); 
             } 
         }
@@ -54,7 +53,7 @@ void print_board(struct Myfile *myStruct, FILE* file) {
  * Return: Nothing
 */
 void free_data(char **data, int rows) {
-    for (int row = 0; row < rows ; row++) {
+    for (int row = 0; row < rows; row++) {
         free(data[row]);
     }
 
@@ -90,7 +89,7 @@ int handle_error_123(int argc, char **argv) {
     }
 
     char *fileName = argv[3];
-    FILE* file;
+    FILE *file;
     file = fopen(fileName, "row");
 
     if (file == NULL) {
@@ -104,14 +103,14 @@ int handle_error_123(int argc, char **argv) {
 }
 
 /** Function: get_file_to_read
- * Read the argv[3] and return file pointer to that given file name                 
+ * Read the argv[3] and return file pointer to that given file name
  * Parameters:
  * argv: Argument value (from main() function)
  * Return: pointer to a file with respect to given file name argv[3]
 */
-FILE* get_file_to_read(char **argv) {
+FILE *get_file_to_read(char **argv) {
     char *fileName = argv[3];
-    FILE* file;
+    FILE *file;
     file = fopen(fileName, "row");
 
     return file;
@@ -211,14 +210,14 @@ void read_board(FILE *file, struct Myfile *myStruct, int *next) {
             if (row == 0 || row == rows - 1) {
                 if (column > 1 && column < numberOfColums - 3 &&
                         column % 2 == 0) {
-                    if ((char)(*next)-'0' != 0) {
+                    if ((char)(*next) - '0' != 0) {
                         *validBoard = false;
                         break;
                     }
                 }
             } else {
                 if (column == 0 || column == numberOfColums - 3) {
-                    if ((char)(*next)-'0' != 0) {
+                    if ((char)(*next) - '0' != 0) {
                         *validBoard = false;
                         break;
                     }
@@ -234,7 +233,7 @@ void read_board(FILE *file, struct Myfile *myStruct, int *next) {
                 *next = fgetc(file);
             }
         }
-	}
+    }
 }
 
 /** Function: read_file
@@ -270,7 +269,7 @@ void read_file(FILE *file, struct Myfile *myStruct) {
 
     // create **data, save it to struct and pass down to read_board()
     char **data = malloc(sizeof(char *) * numberOfRows);
-    for (int row = 0; row < numberOfRows ; row++) {
+    for (int row = 0; row < numberOfRows; row++) {
         data[row] = malloc(sizeof(char) * numberOfColums);
     }
 
@@ -310,7 +309,7 @@ bool is_valid_insert_at_top(char **data, int rows, int columns, int column,
             if (shift) {
                 for (int shiftIndex = row; shiftIndex > 0; shiftIndex--) {
                     data[shiftIndex][columnToInsert] = 
-                        data[shiftIndex - 1][columnToInsert];
+                            data[shiftIndex - 1][columnToInsert];
                 }
             }
             isEmptyShell = true;
@@ -388,7 +387,7 @@ bool is_valid_insert_at_left(char **data, int rows, int columns, int row,
             data[rowToInsert][2 * columns - 1] != '.';
     bool isEmptyShell = false;
 
-    for (int row = 3; row < 2 *columns; row += 2) {
+    for (int row = 3; row < 2 * columns; row += 2) {
         if (data[rowToInsert][row] == '.') {
             if (shift) {
                 for (int shiftIndex = row; shiftIndex >= 3; 
@@ -427,16 +426,16 @@ bool is_valid_insert_at_left(char **data, int rows, int columns, int row,
 bool is_valid_insert_at_right(char **data, int rows, int columns, int row, 
         int rowToInsert, int columnToInsert, bool shift) {
     bool invalids = data[rowToInsert][columnToInsert - 2] == '.' ||
-        data[rowToInsert][1] != '.';
+            data[rowToInsert][1] != '.';
     bool isEmptyShell = false;
 
-    for (int row = 2 * columns - 3; row >= 1; row-=2) {
+    for (int row = 2 * columns - 3; row >= 1; row -= 2) {
         if (data[rowToInsert][row] == '.') {
             if (shift) {
                 for (int shiftIndex = row; shiftIndex < 2 * columns - 2; 
                         shiftIndex += 2) {
                     data[rowToInsert][shiftIndex] = 
-                        data[rowToInsert][shiftIndex + 2];
+                            data[rowToInsert][shiftIndex + 2];
                 }
             }
             isEmptyShell = true;
@@ -481,22 +480,22 @@ bool is_valid_insert(struct Myfile *myStruct, int row, int column,
 
     if (row == 0) {
         return is_valid_insert_at_top(data, rows, columns, column, 
-            columnToInsert, shift);
+                columnToInsert, shift);
     } 
 
     if (row == rows - 1) {
         return is_valid_insert_at_bottom(data, rows, columns, column, 
-            columnToInsert, shift);
+                columnToInsert, shift);
     }
 
     if (column == 0) {
         return is_valid_insert_at_left(data, rows, columns, row, 
-            rowToInsert, columnToInsert, shift);
+                rowToInsert, columnToInsert, shift);
     }
 
     if (column == columns - 1) {
         return is_valid_insert_at_right(data, rows, columns, row, 
-            rowToInsert, columnToInsert, shift);
+                rowToInsert, columnToInsert, shift);
     }
 
     return true;
@@ -530,8 +529,9 @@ void insert_board(struct Myfile *myStruct, int row, int column) {
         data[rowToInsert][columnToInsert + 2] = *turn;
     } else if (column == columns - 1) {
         data[rowToInsert][columnToInsert - 2] = *turn;
-    } 
-    else data[rowToInsert][columnToInsert] = *turn;
+    } else {
+        data[rowToInsert][columnToInsert] = *turn;
+    }
 
     // After insert, change the player turn and save to struct
     *turn = *turn == 'X' ? 'O' : 'X'; 
@@ -551,7 +551,7 @@ bool is_end_game(struct Myfile *myStruct) {
     bool isEndGame = true;
 
     for (int row = 1; row < rows - 1; row++) {
-        for (int column=3; column < 2 * columns - 2; column+=2) {
+        for (int column = 3; column < 2 * columns - 2; column += 2) {
             if (data[row][column] == '.') {
                 isEndGame = false;
                 break;
@@ -582,9 +582,9 @@ void find_winner(struct Myfile *myStruct) {
     for (int row = 0; row < rows; row++) {
         for (int column = 0; column < numberOfColums; column++) {
             if (data[row][column] == 'X') {
-                scoreX += (data[row][column - 1]-'0');
+                scoreX += (data[row][column - 1] - '0');
             } else if (data[row][column] == 'O') {
-                scoreO += (data[row][column - 1]-'0');
+                scoreO += (data[row][column - 1] - '0');
             }
         }
     }
@@ -593,7 +593,9 @@ void find_winner(struct Myfile *myStruct) {
         myStruct->Winners = 'X';
     } else if (scoreO > scoreX) {
         myStruct->Winners = 'O';
-    } else myStruct->Winners = '?';
+    } else {
+        myStruct->Winners = '?';
+    }
 
     if (myStruct->Winners == '?') {
         printf("Winners: %c %c\n", 'O', 'X');
@@ -603,14 +605,14 @@ void find_winner(struct Myfile *myStruct) {
 }
 
 // Type O
-/** Function: handle_type0_O
+/** Function: handle_type0_o
  * Support function for handle_type_0, handle how player O throw the stone
  * Parameters:
  * myStruct: get the needed information from myStruct
  * Return: Nothing
 */ 
-void handle_type0_O(struct Myfile *myStruct) {
-    char* turn = &myStruct->turn;
+void handle_type0_o(struct Myfile *myStruct) {
+    char *turn = &myStruct->turn;
     int numberOfRows = myStruct->rows;
     int numberOfColums = myStruct->columns * 2 + 1;
     bool finish = false;
@@ -626,7 +628,7 @@ void handle_type0_O(struct Myfile *myStruct) {
             if (data[row][column] == '.') {
                 data[row][column] = *turn;
                 printf("Player %c placed at %d %d\n", 
-                    *turn, row, (column - 1) / 2);
+                        *turn, row, (column - 1) / 2);
                 print_board(myStruct, stdout);
                 *turn = 'X';
                 finish = true;
@@ -636,14 +638,14 @@ void handle_type0_O(struct Myfile *myStruct) {
     }     
 }
 
-/** Function: handle_type0_X
+/** Function: handle_type0_x
  * Support function for handle_type_0, handle how player X throw the stone
  * Parameters:
  * myStruct: get the needed information from myStruct
  * Return: Nothing
 */ 
-void handle_type0_X(struct Myfile *myStruct) {
-    char* turn = &myStruct->turn;
+void handle_type0_x(struct Myfile *myStruct) {
+    char *turn = &myStruct->turn;
     int numberOfRows = myStruct->rows;
     int numberOfColums = myStruct->columns * 2 + 1;
     bool finish = false;
@@ -657,9 +659,9 @@ void handle_type0_X(struct Myfile *myStruct) {
 
         for (int column = numberOfColums - 4; column > 1; column -= 2) {
             if (data[row][column] == '.') {
-                    data[row][column] = *turn;
+                        data[row][column] = *turn;
                 printf("Player %c placed at %d %d\n", 
-                    *turn, row, (column - 1) / 2);
+                        *turn, row, (column - 1) / 2);
                 print_board(myStruct, stdout);
                 *turn = 'O';
                 finish = true;
@@ -679,9 +681,9 @@ void handle_type0(struct Myfile *myStruct) {
     char turn = myStruct->turn;
 
     if (turn == 'O') {
-        handle_type0_O(myStruct);		
+        handle_type0_o(myStruct);		
     } else if (turn == 'X') {
-        handle_type0_X(myStruct);
+        handle_type0_x(myStruct);
     }
 }
 
@@ -700,7 +702,7 @@ void handle_lower_score(struct Myfile *myStruct,
     is_valid_insert(myStruct, row, column, true);
 
     printf("Player %c placed at %d %d\n", myStruct->turn, 
-        row, column);
+            row, column);
 
     insert_board(myStruct, row, column);
 
@@ -737,9 +739,9 @@ bool calculate_insert_top(struct Myfile *myStruct) {
                 }
 
                 if (data[row][columnToInsert] == opponentTurn) {
-                        opponentScore +=
-                                (data[row][columnToInsert - 1] - '0');
-                        opponentScoreLater += 
+                    opponentScore +=
+                            (data[row][columnToInsert - 1] - '0');
+                    opponentScoreLater += 
                             (data[row + 1][columnToInsert - 1] - '0');
                 } else if (data[row][columnToInsert] == '.') {
                     isDotFound = true;
@@ -834,7 +836,7 @@ bool calculate_insert_bottom(struct Myfile *myStruct) {
                 if (data[row][columnToInsert] == opponentTurn) {
                     opponentScore += (data[row][columnToInsert - 1] - '0');
                     opponentScoreLater += 
-                        (data[row - 1][columnToInsert - 1] - '0');
+                            (data[row - 1][columnToInsert - 1] - '0');
                 } else if (data[row][columnToInsert] == '.') {
                     isDotFound = true;
                     break;
@@ -912,10 +914,10 @@ void insert_interior(struct Myfile *myStruct) {
     for (int score = 9; score > 0; score--) {
         for (int row = 1; row < rows - 1; row++) {
             for (int column = 1; column < columns - 1; column++) {
-                if ((data[row][column * 2]-'0') == score &&
-                        data[row][column * 2 + 1] == '.') {
+                if ((data[row][column * 2] - '0') == score &&
+                            data[row][column * 2 + 1] == '.') {
                     printf("Player %c placed at %d %d\n",
-                        myStruct->turn, row, column);
+                            myStruct->turn, row, column);
                     insert_board(myStruct, row, column);
                     print_board(myStruct, stdout);
 
@@ -965,8 +967,8 @@ void handle_type1(struct Myfile *myStruct) {
  * input: 's' + saveName
  * Return: Nothing
 */
-void handle_save_file(struct Myfile *myStruct, char* input) {
-    FILE* writtenFile;
+void handle_save_file(struct Myfile *myStruct, char *input) {
+    FILE *writtenFile;
     writtenFile = fopen((input + 1), "w");
 
     fprintf(writtenFile, "%d %d\n", myStruct->rows, myStruct->columns);
@@ -992,13 +994,13 @@ bool handle_type_H(struct Myfile *myStruct) {
     char *turn = &myStruct->turn;
     int row, column, bufPosition, returnValue; 
     char line[50];
-	char input[30];
+    char input[30];
     bool isValidInput = true;
 
     printf("%c:(R C)> ", *turn);
 
     char *getInput = fgets(line, sizeof(line), stdin);
-	if (getInput == NULL) {
+    if (getInput == NULL) {
         myStruct->exitCode = 5;	
         myStruct->validBoard = false;
 
@@ -1046,7 +1048,7 @@ bool handle_type_H(struct Myfile *myStruct) {
 */
 void play_game(struct Myfile *myStruct, char typeOfPlayerX, 
         char typeOfPlayerO) {
-    char* turn = &myStruct->turn;
+    char *turn = &myStruct->turn;
 
     while (!is_end_game(myStruct)) {
         char currentType = (*turn == 'X') ? typeOfPlayerX : typeOfPlayerO;
@@ -1074,7 +1076,7 @@ void play_game(struct Myfile *myStruct, char typeOfPlayerX,
 
 int main(int argc, char **argv) {
     // check error from 1-3 when running an executable file
-    int errorCode = handle_error_123(argc,argv);
+    int errorCode = handle_error_123(argc, argv);
 
     if (errorCode > 0) {
         return errorCode;
