@@ -350,8 +350,8 @@ bool is_valid_insert_at_bottom(char **data, int rows, int columns, int column,
             if (shift) {
                 for (int shiftIndex = row; shiftIndex < rows - 1; 
                         shiftIndex++) {
-                data[shiftIndex][columnToInsert] = 
-                        data[shiftIndex + 1][columnToInsert];
+                    data[shiftIndex][columnToInsert] = 
+                            data[shiftIndex + 1][columnToInsert];
                 }
             }
             isEmptyShell = true;
